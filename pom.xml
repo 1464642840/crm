@@ -56,6 +56,11 @@
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>sqljdbc4</artifactId>
+            <version>4.0</version>
+        </dependency>
         <!--MyBatis 及 插件依赖-->
         <dependency>
             <groupId>org.mybatis</groupId>
@@ -65,7 +70,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.4.5</version>
+            <version>3.5.3</version>
         </dependency>
         <dependency>
             <groupId>tk.mybatis</groupId>
@@ -75,7 +80,7 @@
         <dependency>
             <groupId>com.github.pagehelper</groupId>
             <artifactId>pagehelper</artifactId>
-            <version>4.2.1</version>
+            <version>5.1.11</version>
         </dependency>
         <!--阿里 FastJson依赖-->
         <dependency>
