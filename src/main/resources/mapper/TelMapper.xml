@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.project.dao.TelMapper">
+    <resultMap id="BaseResultMap" type="com.company.project.model.Tel">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="ord" jdbcType="INTEGER" property="ord"/>
+        <result column="sort" jdbcType="NVARCHAR" property="sort"/>
+        <result column="name" jdbcType="NVARCHAR" property="name"/>
+        <result column="khid" jdbcType="NVARCHAR" property="khid"/>
+        <result column="area" jdbcType="INTEGER" property="area"/>
+        <result column="trade" jdbcType="INTEGER" property="trade"/>
+        <result column="sort1" jdbcType="INTEGER" property="sort1"/>
+        <result column="sort2" jdbcType="INTEGER" property="sort2"/>
+        <result column="ly" jdbcType="INTEGER" property="ly"/>
+        <result column="jz" jdbcType="INTEGER" property="jz"/>
+        <result column="person" jdbcType="INTEGER" property="person"/>
+        <result column="phone" jdbcType="NVARCHAR" property="phone"/>
+        <result column="fax" jdbcType="NVARCHAR" property="fax"/>
+        <result column="email" jdbcType="NVARCHAR" property="email"/>
+        <result column="faren" jdbcType="NVARCHAR" property="faren"/>
+        <result column="zijin" jdbcType="DECIMAL" property="zijin"/>
+        <result column="pernum1" jdbcType="INTEGER" property="pernum1"/>
+        <result column="pernum2" jdbcType="INTEGER" property="pernum2"/>
+        <result column="url" jdbcType="NVARCHAR" property="url"/>
+        <result column="zip" jdbcType="NVARCHAR" property="zip"/>
+        <result column="address" jdbcType="NVARCHAR" property="address"/>
+        <result column="gate" jdbcType="NVARCHAR" property="gate"/>
+        <result column="x" jdbcType="NVARCHAR" property="x"/>
+        <result column="h" jdbcType="NVARCHAR" property="h"/>
+        <result column="f" jdbcType="NVARCHAR" property="f"/>
+        <result column="num1" jdbcType="DECIMAL" property="num1"/>
+        <result column="num2" jdbcType="DECIMAL" property="num2"/>
+        <result column="share" jdbcType="NVARCHAR" property="share"/>
+        <result column="order1" jdbcType="INTEGER" property="order1"/>
+        <result column="cateadd" jdbcType="INTEGER" property="cateadd"/>
+        <result column="cateorder1" jdbcType="INTEGER" property="cateorder1"/>
+        <result column="cateid" jdbcType="INTEGER" property="cateid"/>
+        <result column="cateid2" jdbcType="INTEGER" property="cateid2"/>
+        <result column="cateid3" jdbcType="INTEGER" property="cateid3"/>
+        <result column="cateid4" jdbcType="INTEGER" property="cateid4"/>
+        <result column="cateidgq" jdbcType="INTEGER" property="cateidgq"/>
+        <result column="date2" jdbcType="TIMESTAMP" property="date2"/>
+        <result column="date1" jdbcType="TIMESTAMP" property="date1"/>
+        <result column="datepro" jdbcType="TIMESTAMP" property="datepro"/>
+        <result column="dategq" jdbcType="TIMESTAMP" property="dategq"/>
+        <result column="profect1" jdbcType="INTEGER" property="profect1"/>
+        <result column="del" jdbcType="INTEGER" property="del"/>
+        <result column="delcate" jdbcType="INTEGER" property="delcate"/>
+        <result column="deldate" jdbcType="TIMESTAMP" property="deldate"/>
+        <result column="date8" jdbcType="TIMESTAMP" property="date8"/>
+        <result column="datealt" jdbcType="TIMESTAMP" property="datealt"/>
+        <result column="bank_1" jdbcType="NVARCHAR" property="bank1"/>
+        <result column="bank_2" jdbcType="NVARCHAR" property="bank2"/>
+        <result column="bank_7" jdbcType="NVARCHAR" property="bank7"/>
+        <result column="bank_3" jdbcType="NVARCHAR" property="bank3"/>
+        <result column="bank_4" jdbcType="NVARCHAR" property="bank4"/>
+        <result column="bank_5" jdbcType="NVARCHAR" property="bank5"/>
+        <result column="bank_6" jdbcType="NVARCHAR" property="bank6"/>
+        <result column="bank2_1" jdbcType="NVARCHAR" property="bank21"/>
+        <result column="bank2_2" jdbcType="NVARCHAR" property="bank22"/>
+        <result column="bank2_7" jdbcType="NVARCHAR" property="bank27"/>
+        <result column="bank2_3" jdbcType="NVARCHAR" property="bank23"/>
+        <result column="bank2_4" jdbcType="NVARCHAR" property="bank24"/>
+        <result column="bank2_5" jdbcType="NVARCHAR" property="bank25"/>
+        <result column="bank2_6" jdbcType="NVARCHAR" property="bank26"/>
+        <result column="fkdays" jdbcType="INTEGER" property="fkdays"/>
+        <result column="fkdate" jdbcType="INTEGER" property="fkdate"/>
+        <result column="jf" jdbcType="DECIMAL" property="jf"/>
+        <result column="jf2" jdbcType="DECIMAL" property="jf2"/>
+        <result column="company" jdbcType="INTEGER" property="company"/>
+        <result column="pym" jdbcType="NVARCHAR" property="pym"/>
+        <result column="sort3" jdbcType="INTEGER" property="sort3"/>
+        <result column="datelast" jdbcType="TIMESTAMP" property="datelast"/>
+        <result column="sortfq" jdbcType="INTEGER" property="sortfq"/>
+        <result column="zdy1" jdbcType="NVARCHAR" property="zdy1"/>
+        <result column="zdy2" jdbcType="NVARCHAR" property="zdy2"/>
+        <result column="zdy3" jdbcType="NVARCHAR" property="zdy3"/>
+        <result column="zdy4" jdbcType="NVARCHAR" property="zdy4"/>
+        <result column="zdy5" jdbcType="INTEGER" property="zdy5"/>
+        <result column="zdy6" jdbcType="INTEGER" property="zdy6"/>
+        <result column="hk_xz" jdbcType="DECIMAL" property="hkXz"/>
+        <result column="money1" jdbcType="DECIMAL" property="money1"/>
+        <result column="hmd" jdbcType="INTEGER" property="hmd"/>
+        <result column="sharecontact" jdbcType="INTEGER" property="sharecontact"/>
+        <result column="replyShare" jdbcType="INTEGER" property="replyshare"/>
+        <result column="ModifyStamp" jdbcType="VARCHAR" property="modifystamp"/>
+        <result column="tel_excel_drSign" jdbcType="BIGINT" property="telExcelDrsign"/>
+        <result column="tel_excel_drUser" jdbcType="INTEGER" property="telExcelDruser"/>
+        <result column="sp" jdbcType="INTEGER" property="sp"/>
+        <result column="cateid_sp" jdbcType="INTEGER" property="cateidSp"/>
+        <result column="status_sp" jdbcType="INTEGER" property="statusSp"/>
+        <result column="date_sp" jdbcType="TIMESTAMP" property="dateSp"/>
+        <result column="intro_sp_cateid" jdbcType="INTEGER" property="introSpCateid"/>
+        <result column="credit" jdbcType="INTEGER" property="credit"/>
+        <result column="isNeedQuali" jdbcType="INTEGER" property="isneedquali"/>
+        <result column="qualifications" jdbcType="INTEGER" property="qualifications"/>
+        <result column="sp_qualifications" jdbcType="INTEGER" property="spQualifications"/>
+        <result column="cateid_sp_qualifications" jdbcType="INTEGER" property="cateidSpQualifications"/>
+        <result column="status_sp_qualifications" jdbcType="INTEGER" property="statusSpQualifications"/>
+        <result column="lat" jdbcType="DECIMAL" property="lat"/>
+        <result column="lng" jdbcType="DECIMAL" property="lng"/>
+        <result column="hascoord" jdbcType="INTEGER" property="hascoord"/>
+        <result column="product" jdbcType="LONGNVARCHAR" property="product"/>
+        <result column="intro" jdbcType="LONGNVARCHAR" property="intro"/>
+        <result column="c2" jdbcType="LONGNVARCHAR" property="c2"/>
+        <result column="c3" jdbcType="LONGNVARCHAR" property="c3"/>
+        <result column="c4" jdbcType="LONGNVARCHAR" property="c4"/>
+    </resultMap>
+
+
+    <select id="findByMyCondition" resultMap="BaseResultMap" parameterType="map">
+        select DISTINCT
+        <if test="order.equals('distance')">
+            ROUND(
+            6378.138 * 2 * ASIN(
+            SQRT(
+            power(
+            SIN(
+            (
+            #{lat} * PI() / 180 - t.lat * PI() / 180
+            ) / 2
+            ),
+            2
+            ) + COS(#{lat} * PI() / 180) * COS(t.lat * PI() / 180) * power(
+            SIN(
+            (
+            #{lng} * PI() / 180 - t.lng * PI() / 180
+            ) / 2
+            ),
+            2
+            )
+            )
+            ) * 1000
+            ,0) as juli,
+        </if>
+        t.ord,
+        t.khid,
+        t.name,
+        t.address,
+        t.person,
+        p.name person_name,
+        p.mobile
+        FROM
+        tel t
+        LEFT JOIN person p
+        ON t.person = p.ord
+        WHERE t.del = 1
+        AND t.name IS NOT NULL
+        AND p.del = 1
+        AND t.cateid =
+        (SELECT
+        top 1
+        g.ord
+        FROM
+        gate g
+        WHERE g.username = #{ywy})
+        <if test="order.equals('name')">
+            order by t.pym ,t.name
+        </if>
+        <if test="order.equals('distance')">
+            order by juli,t.pym ,t.name
+        </if>
+    </select>
+
+
+    <select id="findByMyCondition_COUNT" resultType="Long">
+        select   count(DISTINCT
+
+        t.ord )
+        FROM
+        tel t
+        LEFT JOIN person p
+        ON t.person = p.ord
+        WHERE t.del = 1
+        AND t.name IS NOT NULL
+        AND p.del = 1
+        AND t.cateid =
+        (SELECT
+        top 1
+        g.ord
+        FROM
+        gate g
+        WHERE g.username = #{ywy})
+</select>
+
+
+</mapper>
