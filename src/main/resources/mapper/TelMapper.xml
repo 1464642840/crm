@@ -146,9 +146,39 @@
         tel t
         LEFT JOIN person p
         ON t.person = p.ord
+        <if test="visitDate1!=null||visitDate1!=null">
+            left join plan1 pl
+            on t.ord=pl.company and pl.cateid=(SELECT
+            top 1
+            g.ord
+            FROM
+            gate g
+            WHERE g.username = #{ywy})
+        </if>
         WHERE t.del = 1
+        <if test="visitDate1!=null">
+            and pl.date8>=#{visitDate1}
+        </if>
+        <if test="visitDate2!=null">
+            and pl.date8&lt;=#{visitDate2}
+        </if>
         AND t.name IS NOT NULL
         AND p.del = 1
+        <if test=" keyword!=null">
+            and t.name like '%${keyword}%'
+        </if>
+        <if test="businessType!=null">
+            and #{businessType}=(select ev.FValue
+            from erp_customvalues ev
+            where ev.FieldsID=27 and OrderID=t.ord)
+        </if>
+        <if test="createDate1!=null">
+            and t.date1>=#{createDate1}
+        </if>
+        <if test="createDate2!=null">
+            and t.date1&lt;=#{createDate2}
+        </if>
+
         AND t.cateid =
         (SELECT
         top 1
@@ -166,16 +196,46 @@
 
 
     <select id="findByMyCondition_COUNT" resultType="Long">
-        select   count(DISTINCT
+        select count(DISTINCT
 
         t.ord )
         FROM
         tel t
         LEFT JOIN person p
         ON t.person = p.ord
+        <if test="visitDate1!=null||visitDate1!=null">
+            left join plan1 pl
+            on t.ord=pl.company and pl.cateid=(SELECT
+            top 1
+            g.ord
+            FROM
+            gate g
+            WHERE g.username = #{ywy})
+        </if>
         WHERE t.del = 1
         AND t.name IS NOT NULL
         AND p.del = 1
+        <if test="visitDate1!=null">
+            and pl.date8>=#{visitDate1}
+        </if>
+        <if test="visitDate2!=null">
+            and pl.date8&lt;=#{visitDate2}
+        </if>
+        <if test="keyword!=null">
+            and t.name like'%${keyword}%'
+        </if>
+        <if test="businessType!=null">
+            and #{businessType}=(select ev.FValue
+            from erp_customvalues ev
+            where ev.FieldsID=27 and OrderID=t.ord)
+        </if>
+        <if test="createDate1!=null">
+            and t.date1>=#{createDate1}
+        </if>
+        <if test="createDate2!=null">
+            and t.date1&lt;=#{createDate2}
+        </if>
+
         AND t.cateid =
         (SELECT
         top 1
@@ -183,7 +243,7 @@
         FROM
         gate g
         WHERE g.username = #{ywy})
-</select>
+    </select>
 
 
 </mapper>
