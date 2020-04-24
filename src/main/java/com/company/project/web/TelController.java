@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +63,9 @@ public class TelController {
     }
 
     @PostMapping("/custList")
-    public Result custList(@RequestParam(defaultValue = "") String visitDate1,@RequestParam(defaultValue = "") String visitDate2,@RequestParam(defaultValue = "") String keyword,@RequestParam(defaultValue = "") String createDate1,@RequestParam(required = false) String businessType, @RequestParam(defaultValue = "") String createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "0") Integer size, @RequestParam(defaultValue = "") String ywy) {
+    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1,@RequestParam(defaultValue = "0") Long visitDate2,@RequestParam(defaultValue = "") String keyword,@RequestParam(defaultValue = "0") Long createDate1,@RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "0") Integer size, @RequestParam(defaultValue = "") String ywy) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
         // List<Tel> list = telService.findAll();
         if (StrUtils.isNull(ywy)) {
@@ -70,18 +74,24 @@ public class TelController {
         Map<String, Object> map = new HashMap<>();
         map.put("ywy", ywy); //业务员
         map.put("order", order); //排序方式
-        if(!StrUtils.isNull(createDate1)){
-            map.put("createDate1",createDate1); //开始创建时间
+
+        try {
+            if(createDate1!=0){
+                map.put("createDate1",sdf.format(new Date(createDate1))); //开始创建时间
+            }
+            if(createDate2!=0){
+                map.put("createDate2",sdf.format(new Date(createDate2))); //结束创建时间
+            }
+            if(visitDate1!=0){
+                map.put("visitDate1",sdf.format(new Date(visitDate1))); //开始拜访时间
+            }
+            if(visitDate2!=0){
+                map.put("visitDate2",sdf.format(new Date(visitDate2))); //结束创建时间
+            }
+        }catch (Exception e){
+            return  ResultGenerator.genFailResult("日期格式有误");
         }
-        if(!StrUtils.isNull(createDate2)){
-            map.put("createDate2", createDate2); //结束创建时间
-        }
-        if(!StrUtils.isNull(visitDate1)){
-            map.put("visitDate1",visitDate1); //开始拜访时间
-        }
-        if(!StrUtils.isNull(visitDate2)){
-            map.put("visitDate2", visitDate2); //结束拜访时间
-        }
+
         if(!StrUtils.isNull(businessType)){
             map.put("businessType", businessType); //企业类型
         }

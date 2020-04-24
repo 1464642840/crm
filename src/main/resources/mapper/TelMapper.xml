@@ -146,7 +146,7 @@
         tel t
         LEFT JOIN person p
         ON t.person = p.ord
-        <if test="visitDate1!=null||visitDate1!=null">
+        <if test="visitDate1!=null||visitDate2!=null">
             left join plan1 pl
             on t.ord=pl.company and pl.cateid=(SELECT
             top 1
@@ -203,7 +203,7 @@
         tel t
         LEFT JOIN person p
         ON t.person = p.ord
-        <if test="visitDate1!=null||visitDate1!=null">
+        <if test="visitDate1!=null||visitDate2!=null">
             left join plan1 pl
             on t.ord=pl.company and pl.cateid=(SELECT
             top 1
