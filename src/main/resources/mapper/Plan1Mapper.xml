@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.project.dao.Plan1Mapper">
+    <resultMap id="BaseResultMap" type="com.company.project.model.Plan1">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="ord" jdbcType="INTEGER" property="ord"/>
+        <result column="gate" jdbcType="INTEGER" property="gate"/>
+        <result column="complete" jdbcType="NVARCHAR" property="complete"/>
+        <result column="sort1" jdbcType="INTEGER" property="sort1"/>
+        <result column="date1" jdbcType="TIMESTAMP" property="date1"/>
+        <result column="time1" jdbcType="NVARCHAR" property="time1"/>
+        <result column="time2" jdbcType="NVARCHAR" property="time2"/>
+        <result column="order1" jdbcType="NVARCHAR" property="order1"/>
+        <result column="sort98" jdbcType="INTEGER" property="sort98"/>
+        <result column="cateid" jdbcType="INTEGER" property="cateid"/>
+        <result column="cateid2" jdbcType="INTEGER" property="cateid2"/>
+        <result column="cateid3" jdbcType="INTEGER" property="cateid3"/>
+        <result column="company" jdbcType="INTEGER" property="company"/>
+        <result column="person" jdbcType="INTEGER" property="person"/>
+        <result column="option1" jdbcType="INTEGER" property="option1"/>
+        <result column="chance" jdbcType="INTEGER" property="chance"/>
+        <result column="lcb" jdbcType="INTEGER" property="lcb"/>
+        <result column="contract" jdbcType="INTEGER" property="contract"/>
+        <result column="pay" jdbcType="NVARCHAR" property="pay"/>
+        <result column="date7" jdbcType="TIMESTAMP" property="date7"/>
+        <result column="date4" jdbcType="TIMESTAMP" property="date4"/>
+        <result column="date8" jdbcType="TIMESTAMP" property="date8"/>
+        <result column="startdate1" jdbcType="TIMESTAMP" property="startdate1"/>
+        <result column="starttime1" jdbcType="NVARCHAR" property="starttime1"/>
+        <result column="starttime2" jdbcType="NVARCHAR" property="starttime2"/>
+        <result column="isXunhuan" jdbcType="INTEGER" property="isxunhuan"/>
+        <result column="alt" jdbcType="INTEGER" property="alt"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="lng" jdbcType="DECIMAL" property="lng"/>
+        <result column="lat" jdbcType="DECIMAL" property="lat"/>
+        <result column="intro" jdbcType="LONGNVARCHAR" property="intro"/>
+        <result column="intro2" jdbcType="LONGNVARCHAR" property="intro2"/>
+    </resultMap>
+
+
+    <select id="findByMyCondition" resultMap="BaseResultMap" parameterType="map">
+        select
+        pl.ord,
+        g.username,
+        t.name companyName,
+        pl.intro,
+        (select count( dp.id) from dianping dp where dp.ord = ry.id) dianpingCount
+        from plan1 pl
+        left join gate g on pl.cateid=g.ord
+        left join tel t on t.ord = pl.company
+        left join reply ry on ry.plan1 = pl.ord
+        where 1=1
+        <if test="createDate1!=null">
+            and pl.date7>=#{createDate1}
+        </if>
+        <if test="bumen != null">
+            and g.sorce = (select distinct g1.ord from gate1 g1 where g1.sort1 = #{bumen})
+        </if>
+        <if test="createDate2!=null">
+            and pl.date7&lt;=#{createDate2}
+        </if>
+
+        <if test="keyword!=null">
+            and(t.name like '%${keyword}%' or g.username like '%${keyword}%')
+        </if>
+
+    </select>
+
+
+</mapper>

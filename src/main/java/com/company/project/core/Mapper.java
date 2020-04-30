@@ -3,6 +3,7 @@ package com.company.project.core;
 import tk.mybatis.mapper.common.BaseMapper;
 import tk.mybatis.mapper.common.ConditionMapper;
 import tk.mybatis.mapper.common.IdsMapper;
+import tk.mybatis.mapper.common.MySqlMapper;
 import tk.mybatis.mapper.common.special.InsertListMapper;
 
 /**
@@ -13,5 +14,6 @@ public interface Mapper<T>
         BaseMapper<T>,
         ConditionMapper<T>,
         IdsMapper<T>,
-        InsertListMapper<T> {
+        InsertListMapper<T>,
+        MySqlMapper<T> {
 }

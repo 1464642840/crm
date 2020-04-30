@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.project.dao.ReplyMapper">
+  <resultMap id="BaseResultMap" type="com.company.project.model.Reply">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" jdbcType="INTEGER" property="id" />
+    <result column="ord" jdbcType="INTEGER" property="ord" />
+    <result column="ord2" jdbcType="INTEGER" property="ord2" />
+    <result column="sort1" jdbcType="INTEGER" property="sort1" />
+    <result column="sort98" jdbcType="INTEGER" property="sort98" />
+    <result column="gj1" jdbcType="INTEGER" property="gj1" />
+    <result column="gj2" jdbcType="INTEGER" property="gj2" />
+    <result column="name" jdbcType="NVARCHAR" property="name" />
+    <result column="name2" jdbcType="NVARCHAR" property="name2" />
+    <result column="plan1" jdbcType="INTEGER" property="plan1" />
+    <result column="cateid" jdbcType="INTEGER" property="cateid" />
+    <result column="cateid2" jdbcType="INTEGER" property="cateid2" />
+    <result column="cateid3" jdbcType="INTEGER" property="cateid3" />
+    <result column="time1" jdbcType="INTEGER" property="time1" />
+    <result column="date7" jdbcType="TIMESTAMP" property="date7" />
+    <result column="del" jdbcType="INTEGER" property="del" />
+    <result column="delcate" jdbcType="INTEGER" property="delcate" />
+    <result column="deldate" jdbcType="TIMESTAMP" property="deldate" />
+    <result column="id1" jdbcType="INTEGER" property="id1" />
+    <result column="chance" jdbcType="INTEGER" property="chance" />
+    <result column="company" jdbcType="NVARCHAR" property="company" />
+    <result column="share" jdbcType="NVARCHAR" property="share" />
+    <result column="uploadfile" jdbcType="NVARCHAR" property="uploadfile" />
+    <result column="title" jdbcType="NVARCHAR" property="title" />
+    <result column="reminders" jdbcType="VARCHAR" property="reminders" />
+    <result column="alt" jdbcType="INTEGER" property="alt" />
+    <result column="intro" jdbcType="LONGNVARCHAR" property="intro" />
+  </resultMap>
+</mapper>

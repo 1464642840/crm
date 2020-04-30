@@ -24,8 +24,14 @@ public abstract class AbstractService<T> implements Service<T> {
         modelClass = (Class<T>) pt.getActualTypeArguments()[0];
     }
 
-    public void save(T model) {
-        mapper.insertSelective(model);
+    public int save(T model) {
+        int i = mapper.insertSelective(model);
+        return i;
+    }
+
+    public T saveOneKey(T model) {
+        mapper.insertUseGeneratedKeys(model);
+        return model;
     }
 
     public void save(List<T> models) {
