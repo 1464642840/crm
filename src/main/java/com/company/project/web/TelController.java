@@ -63,7 +63,7 @@ public class TelController {
     }
 
     @PostMapping("/custList")
-    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1,@RequestParam(defaultValue = "0") Long visitDate2,@RequestParam(defaultValue = "") String keyword,@RequestParam(defaultValue = "0") Long createDate1,@RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "0") Integer size, @RequestParam(defaultValue = "") String ywy) {
+    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1,@RequestParam(defaultValue = "0") Long visitDate2,@RequestParam(defaultValue = "") String keyword,@RequestParam(defaultValue = "0") Long createDate1,@RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -109,7 +109,7 @@ public class TelController {
         List<Tel> list = telService.findByMyCondition(map);
         PageInfo pageInfo = new PageInfo(list);
 
-        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile"};
+        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile","businessType"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Tel.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);

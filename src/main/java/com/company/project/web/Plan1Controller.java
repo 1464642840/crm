@@ -1,6 +1,8 @@
 package com.company.project.web;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
@@ -107,10 +109,12 @@ public class Plan1Controller {
         PageInfo pageInfo = new PageInfo(list);
 
 
-        String[] fileds = {"ord","username","companyName","dianpingCount","introObj"};
+        String[] fileds = {"ord","username","companyName","dianpingCount","introObj","tags","replyId","others","date7"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Plan1.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
-        List parse = (List) JSONArray.parse(jsonStu);
+        String s = JSON.toJSONString(jsonStu, SerializerFeature.WriteDateUseDateFormat);
+        List parse = (List) JSONArray.parse(s);
+
         pageInfo.setList(parse);
         return ResultGenerator.genSuccessResult(pageInfo);
     }

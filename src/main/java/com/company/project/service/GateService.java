@@ -12,4 +12,6 @@ import java.util.Map;
 public interface GateService extends Service<Gate> {
 
     List<Map<Object,Object>> getPositionByName(String ywy);
+
+    List<Gate> findByMyCondition(Map<String, Object> map);
 }

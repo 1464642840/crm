@@ -135,6 +135,11 @@
             ) * 1000
             ,0) as juli,
         </if>
+
+        (select ev.FValue
+        from erp_customvalues ev
+        where ev.FieldsID=27 and OrderID=t.ord) businessType ,
+
         t.ord,
         t.khid,
         t.name,

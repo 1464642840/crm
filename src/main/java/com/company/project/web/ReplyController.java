@@ -36,12 +36,10 @@ public class ReplyController {
         if (nowDate == null) {
             return ResultGenerator.genFailResult("日期不能为空");
         }
-
-
         Date date = new Date(nowDate);
         c.setTime(date);
         reply.setDate7(date);
-
+        reply.setSort1(1);
         reply.setTime1(c.get(Calendar.HOUR_OF_DAY));
         replyService.dosSave(reply);
         return ResultGenerator.genSuccessResult();

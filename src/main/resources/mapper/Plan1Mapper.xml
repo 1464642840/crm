@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.company.project.dao.Plan1Mapper">
+
+    
     <resultMap id="BaseResultMap" type="com.company.project.model.Plan1">
         <!--
           WARNING - @mbg.generated
@@ -37,6 +39,9 @@
         <result column="lat" jdbcType="DECIMAL" property="lat"/>
         <result column="intro" jdbcType="LONGNVARCHAR" property="intro"/>
         <result column="intro2" jdbcType="LONGNVARCHAR" property="intro2"/>
+        <collection property="dianPingList" javaType="com.company.project.model.Dianping">
+            <id property="id" column="id"></id>
+        </collection>
     </resultMap>
 
 
@@ -46,11 +51,19 @@
         g.username,
         t.name companyName,
         pl.intro,
-        (select count( dp.id) from dianping dp where dp.ord = ry.id) dianpingCount
+        pl.tags,
+        ry.id replyId,
+        pl.others,
+        pl.date7,
+        dp.id,
+        dp.name,
+        dp.intro,
+        dp.date7
         from plan1 pl
         left join gate g on pl.cateid=g.ord
         left join tel t on t.ord = pl.company
         left join reply ry on ry.plan1 = pl.ord
+        left  join dianping dp on dp.ord = ry.id
         where 1=1
         <if test="createDate1!=null">
             and pl.date7>=#{createDate1}

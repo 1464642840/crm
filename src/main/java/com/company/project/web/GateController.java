@@ -1,7 +1,12 @@
 package com.company.project.web;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
 import com.company.project.model.Gate;
+import com.company.project.model.Plan1;
 import com.company.project.service.GateService;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
@@ -10,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,10 +53,19 @@ public class GateController {
     }
 
     @PostMapping("/list")
-    public Result list(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "0") Integer size) {
+    public Result list(@RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "100") Integer size,@RequestParam(defaultValue="0") Integer bumenId) {
         PageHelper.startPage(page, size);
-        List<Gate> list = gateService.findAll();
+        Map<String,Object> map = new HashMap<>();
+        if(bumenId!=0){
+            map.put("bumenId",bumenId);
+        }
+        List<Gate> list = gateService.findByMyCondition(map);
         PageInfo pageInfo = new PageInfo(list);
+        String[] fileds = {"ord","username"};
+        SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Gate.class, fileds);
+        String jsonStu = JSONArray.toJSONString(list, filter);
+        List parse = (List) JSONArray.parse(jsonStu);
+        pageInfo.setList(parse);
         return ResultGenerator.genSuccessResult(pageInfo);
     }
 
