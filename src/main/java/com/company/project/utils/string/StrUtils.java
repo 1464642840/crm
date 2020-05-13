@@ -211,8 +211,9 @@ public class StrUtils {
 	 * @return
 	 */
 	public static String removeHtmlTagP(String inputString) {
-		if (inputString == null)
+		if (inputString == null) {
 			return null;
+		}
 		String htmlStr = inputString; // 含html标签的字符串
 		String textStr = "";
 		Pattern p_script;
@@ -245,8 +246,9 @@ public class StrUtils {
 	}
 
 	public static String removeHtmlTag(String inputString) {
-		if (inputString == null)
+		if (inputString == null) {
 			return null;
+		}
 		String htmlStr = inputString; // 含html标签的字符串
 		String textStr = "";
 		Pattern p_script;

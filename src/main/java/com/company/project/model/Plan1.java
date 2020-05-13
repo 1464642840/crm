@@ -1,13 +1,16 @@
 package com.company.project.model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import javax.persistence.*;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import tk.mybatis.mapper.annotation.*;
+
 
 public class Plan1 {
     @Id
@@ -580,6 +583,9 @@ public class Plan1 {
     private int dianpingCount;
 
     public int getDianpingCount() {
+        if (dianpingList != null) {
+            return dianpingList.size();
+        }
         return dianpingCount;
     }
 
@@ -589,7 +595,7 @@ public class Plan1 {
 
 
     @Column(name = "tags")
-    private Integer tags=0;
+    private Integer tags = 0;
 
     public Integer getTags() {
         return tags;
@@ -612,6 +618,17 @@ public class Plan1 {
     @Transient
     private JSON introObj;
 
+    @Transient
+    private int selfTag;
+
+    public int getSelfTag() {
+        return selfTag;
+    }
+
+    public void setSelfTag(int selfTag) {
+        this.selfTag = selfTag;
+    }
+
     public JSON getIntroObj() {
         return introObj;
     }
@@ -621,13 +638,29 @@ public class Plan1 {
     }
 
 
-    private List<Dianping> dianpingList ;
+    private List<Dianping> dianpingList;
 
     public List<Dianping> getDianpingList() {
         return dianpingList;
     }
 
     public void setDianpingList(List<Dianping> dianpingList) {
+
         this.dianpingList = dianpingList;
+        this.setDianpingCount(dianpingList.size());
+    }
+
+    private List<Tags> tagList;
+
+    public List<Tags> getTagList() {
+
+       return tagList;
+
+    }
+
+    public void setTagList(List<Tags> tagList) {
+
+        this.tagList = tagList;
+
     }
 }

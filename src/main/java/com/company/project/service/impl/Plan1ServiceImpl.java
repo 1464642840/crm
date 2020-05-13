@@ -1,5 +1,7 @@
 package com.company.project.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.company.project.dao.Plan1Mapper;
 import com.company.project.model.Plan1;
 import com.company.project.service.Plan1Service;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,5 +36,11 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
             return "";
         }
         return null;
+    }
+
+    @Override
+    public JSONObject statistics(HashMap<String, Object> map) {
+        HashMap<String,Object> result = plan1Mapper.statistics(map);
+        return (JSONObject) JSONObject.toJSON(result);
     }
 }

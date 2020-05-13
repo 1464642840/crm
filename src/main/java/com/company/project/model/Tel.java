@@ -1,9 +1,12 @@
 package com.company.project.model;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.*;
 
+@Data
 public class Tel {
     @Id
     private Integer ord;
@@ -99,46 +102,46 @@ public class Tel {
     private Date datealt;
 
     @Column(name = "bank_1")
-    private String bank1;
+    private String bank_1;
 
     @Column(name = "bank_2")
-    private String bank2;
+    private String bank_2;
 
     @Column(name = "bank_7")
-    private String bank7;
+    private String bank_7;
 
     @Column(name = "bank_3")
-    private String bank3;
+    private String bank_3;
 
     @Column(name = "bank_4")
-    private String bank4;
+    private String bank_4;
 
     @Column(name = "bank_5")
-    private String bank5;
+    private String bank_5;
 
     @Column(name = "bank_6")
-    private String bank6;
+    private String bank_6;
 
     @Column(name = "bank2_1")
-    private String bank21;
+    private String bank2_1;
 
     @Column(name = "bank2_2")
-    private String bank22;
+    private String bank2_2;
 
     @Column(name = "bank2_7")
-    private String bank27;
+    private String bank2_7;
 
     @Column(name = "bank2_3")
-    private String bank23;
+    private String bank2_3;
 
     @Column(name = "bank2_4")
-    private String bank24;
+    private String bank2_4;
 
     @Column(name = "bank2_5")
-    private String bank25;
+    private String bank2_5;
 
     @Column(name = "bank2_6")
-    private String bank26;
+    private String bank2_6;
 
     private Integer fkdays;
 
@@ -171,7 +174,7 @@ public class Tel {
     private Integer zdy6;
 
     @Column(name = "hk_xz")
-    private BigDecimal hkXz;
+    private BigDecimal hk_xz;
 
     private BigDecimal money1;
 
@@ -180,52 +183,54 @@ public class Tel {
     private Integer sharecontact;
 
     @Column(name = "replyShare")
-    private Integer replyshare;
+    private Integer replyShare;
 
     @Column(name = "ModifyStamp")
-    private String modifystamp;
+    private String ModifyStamp;
 
     @Column(name = "tel_excel_drSign")
-    private Long telExcelDrsign;
+    private Long tel_excel_drSign;
 
     @Column(name = "tel_excel_drUser")
-    private Integer telExcelDruser;
+    private Integer tel_excel_drUser;
 
     private Integer sp;
 
     @Column(name = "cateid_sp")
-    private Integer cateidSp;
+    private Integer cateid_sp;
 
     @Column(name = "status_sp")
-    private Integer statusSp;
+    private Integer status_sp;
 
     @Column(name = "date_sp")
-    private Date dateSp;
+    private Date date_sp;
 
     @Column(name = "intro_sp_cateid")
-    private Integer introSpCateid;
+    private Integer intro_sp_cateid;
 
     private Integer credit;
 
     @Column(name = "isNeedQuali")
-    private Integer isneedquali;
+    private Integer isNeedQuali;
 
     private Integer qualifications;
 
     @Column(name = "sp_qualifications")
-    private Integer spQualifications;
+    private Integer sp_qualifications;
 
     @Column(name = "cateid_sp_qualifications")
-    private Integer cateidSpQualifications;
+    private Integer cateid_sp_qualifications;
 
     @Column(name = "status_sp_qualifications")
-    private Integer statusSpQualifications;
+    private Integer status_sp_qualifications;
 
     private BigDecimal lat;
 
     private BigDecimal lng;
 
+    @Transient
     private String person_name;
+    @Transient
     private String mobile;
 
     private Integer hascoord;
@@ -852,341 +857,6 @@ public class Tel {
         return delcate;
     }
 
-    /**
-     * @param delcate
-     */
-    public void setDelcate(Integer delcate) {
-        this.delcate = delcate;
-    }
-
-    /**
-     * @return deldate
-     */
-    public Date getDeldate() {
-        return deldate;
-    }
-
-    /**
-     * @param deldate
-     */
-    public void setDeldate(Date deldate) {
-        this.deldate = deldate;
-    }
-
-    /**
-     * @return date8
-     */
-    public Date getDate8() {
-        return date8;
-    }
-
-    /**
-     * @param date8
-     */
-    public void setDate8(Date date8) {
-        this.date8 = date8;
-    }
-
-    /**
-     * @return datealt
-     */
-    public Date getDatealt() {
-        return datealt;
-    }
-
-    /**
-     * @param datealt
-     */
-    public void setDatealt(Date datealt) {
-        this.datealt = datealt;
-    }
-
-    /**
-     * @return bank_1
-     */
-    public String getBank1() {
-        return bank1;
-    }
-
-    /**
-     * @param bank1
-     */
-    public void setBank1(String bank1) {
-        this.bank1 = bank1;
-    }
-
-    /**
-     * @return bank_2
-     */
-    public String getBank2() {
-        return bank2;
-    }
-
-    /**
-     * @param bank2
-     */
-    public void setBank2(String bank2) {
-        this.bank2 = bank2;
-    }
-
-    /**
-     * @return bank_7
-     */
-    public String getBank7() {
-        return bank7;
-    }
-
-    /**
-     * @param bank7
-     */
-    public void setBank7(String bank7) {
-        this.bank7 = bank7;
-    }
-
-    /**
-     * @return bank_3
-     */
-    public String getBank3() {
-        return bank3;
-    }
-
-    /**
-     * @param bank3
-     */
-    public void setBank3(String bank3) {
-        this.bank3 = bank3;
-    }
-
-    /**
-     * @return bank_4
-     */
-    public String getBank4() {
-        return bank4;
-    }
-
-    /**
-     * @param bank4
-     */
-    public void setBank4(String bank4) {
-        this.bank4 = bank4;
-    }
-
-    /**
-     * @return bank_5
-     */
-    public String getBank5() {
-        return bank5;
-    }
-
-    /**
-     * @param bank5
-     */
-    public void setBank5(String bank5) {
-        this.bank5 = bank5;
-    }
-
-    /**
-     * @return bank_6
-     */
-    public String getBank6() {
-        return bank6;
-    }
-
-    /**
-     * @param bank6
-     */
-    public void setBank6(String bank6) {
-        this.bank6 = bank6;
-    }
-
-    /**
-     * @return bank2_1
-     */
-    public String getBank21() {
-        return bank21;
-    }
-
-    /**
-     * @param bank21
-     */
-    public void setBank21(String bank21) {
-        this.bank21 = bank21;
-    }
-
-    /**
-     * @return bank2_2
-     */
-    public String getBank22() {
-        return bank22;
-    }
-
-    /**
-     * @param bank22
-     */
-    public void setBank22(String bank22) {
-        this.bank22 = bank22;
-    }
-
-    /**
-     * @return bank2_7
-     */
-    public String getBank27() {
-        return bank27;
-    }
-
-    /**
-     * @param bank27
-     */
-    public void setBank27(String bank27) {
-        this.bank27 = bank27;
-    }
-
-    /**
-     * @return bank2_3
-     */
-    public String getBank23() {
-        return bank23;
-    }
-
-    /**
-     * @param bank23
-     */
-    public void setBank23(String bank23) {
-        this.bank23 = bank23;
-    }
-
-    /**
-     * @return bank2_4
-     */
-    public String getBank24() {
-        return bank24;
-    }
-
-    /**
-     * @param bank24
-     */
-    public void setBank24(String bank24) {
-        this.bank24 = bank24;
-    }
-
-    /**
-     * @return bank2_5
-     */
-    public String getBank25() {
-        return bank25;
-    }
-
-    /**
-     * @param bank25
-     */
-    public void setBank25(String bank25) {
-        this.bank25 = bank25;
-    }
-
-    /**
-     * @return bank2_6
-     */
-    public String getBank26() {
-        return bank26;
-    }
-
-    /**
-     * @param bank26
-     */
-    public void setBank26(String bank26) {
-        this.bank26 = bank26;
-    }
-
-    /**
-     * @return fkdays
-     */
-    public Integer getFkdays() {
-        return fkdays;
-    }
-
-    /**
-     * @param fkdays
-     */
-    public void setFkdays(Integer fkdays) {
-        this.fkdays = fkdays;
-    }
-
-    /**
-     * @return fkdate
-     */
-    public Integer getFkdate() {
-        return fkdate;
-    }
-
-    /**
-     * @param fkdate
-     */
-    public void setFkdate(Integer fkdate) {
-        this.fkdate = fkdate;
-    }
-
-    /**
-     * @return jf
-     */
-    public BigDecimal getJf() {
-        return jf;
-    }
-
-    /**
-     * @param jf
-     */
-    public void setJf(BigDecimal jf) {
-        this.jf = jf;
-    }
-
-    /**
-     * @return jf2
-     */
-    public BigDecimal getJf2() {
-        return jf2;
-    }
-
-    /**
-     * @param jf2
-     */
-    public void setJf2(BigDecimal jf2) {
-        this.jf2 = jf2;
-    }
-
-    /**
-     * @return company
-     */
-    public Integer getCompany() {
-        return company;
-    }
-
-    /**
-     * @param company
-     */
-    public void setCompany(Integer company) {
-        this.company = company;
-    }
-
-    /**
-     * @return pym
-     */
-    public String getPym() {
-        return pym;
-    }
-
-    /**
-     * @param pym
-     */
-    public void setPym(String pym) {
-        this.pym = pym;
-    }
-
-    /**
-     * @return sort3
-     */
-    public Integer getSort3() {
-        return sort3;
-    }
 
     /**
      * @param sort3
@@ -1307,19 +977,7 @@ public class Tel {
         this.zdy6 = zdy6;
     }
 
-    /**
-     * @return hk_xz
-     */
-    public BigDecimal getHkXz() {
-        return hkXz;
-    }
 
-    /**
-     * @param hkXz
-     */
-    public void setHkXz(BigDecimal hkXz) {
-        this.hkXz = hkXz;
-    }
 
     /**
      * @return money1
@@ -1363,159 +1021,6 @@ public class Tel {
         this.sharecontact = sharecontact;
     }
 
-    /**
-     * @return replyShare
-     */
-    public Integer getReplyshare() {
-        return replyshare;
-    }
-
-    /**
-     * @param replyshare
-     */
-    public void setReplyshare(Integer replyshare) {
-        this.replyshare = replyshare;
-    }
-
-    /**
-     * @return ModifyStamp
-     */
-    public String getModifystamp() {
-        return modifystamp;
-    }
-
-    /**
-     * @param modifystamp
-     */
-    public void setModifystamp(String modifystamp) {
-        this.modifystamp = modifystamp;
-    }
-
-    /**
-     * @return tel_excel_drSign
-     */
-    public Long getTelExcelDrsign() {
-        return telExcelDrsign;
-    }
-
-    /**
-     * @param telExcelDrsign
-     */
-    public void setTelExcelDrsign(Long telExcelDrsign) {
-        this.telExcelDrsign = telExcelDrsign;
-    }
-
-    /**
-     * @return tel_excel_drUser
-     */
-    public Integer getTelExcelDruser() {
-        return telExcelDruser;
-    }
-
-    /**
-     * @param telExcelDruser
-     */
-    public void setTelExcelDruser(Integer telExcelDruser) {
-        this.telExcelDruser = telExcelDruser;
-    }
-
-    /**
-     * @return sp
-     */
-    public Integer getSp() {
-        return sp;
-    }
-
-    /**
-     * @param sp
-     */
-    public void setSp(Integer sp) {
-        this.sp = sp;
-    }
-
-    /**
-     * @return cateid_sp
-     */
-    public Integer getCateidSp() {
-        return cateidSp;
-    }
-
-    /**
-     * @param cateidSp
-     */
-    public void setCateidSp(Integer cateidSp) {
-        this.cateidSp = cateidSp;
-    }
-
-    /**
-     * @return status_sp
-     */
-    public Integer getStatusSp() {
-        return statusSp;
-    }
-
-    /**
-     * @param statusSp
-     */
-    public void setStatusSp(Integer statusSp) {
-        this.statusSp = statusSp;
-    }
-
-    /**
-     * @return date_sp
-     */
-    public Date getDateSp() {
-        return dateSp;
-    }
-
-    /**
-     * @param dateSp
-     */
-    public void setDateSp(Date dateSp) {
-        this.dateSp = dateSp;
-    }
-
-    /**
-     * @return intro_sp_cateid
-     */
-    public Integer getIntroSpCateid() {
-        return introSpCateid;
-    }
-
-    /**
-     * @param introSpCateid
-     */
-    public void setIntroSpCateid(Integer introSpCateid) {
-        this.introSpCateid = introSpCateid;
-    }
-
-    /**
-     * @return credit
-     */
-    public Integer getCredit() {
-        return credit;
-    }
-
-    /**
-     * @param credit
-     */
-    public void setCredit(Integer credit) {
-        this.credit = credit;
-    }
-
-    /**
-     * @return isNeedQuali
-     */
-    public Integer getIsneedquali() {
-        return isneedquali;
-    }
-
-    /**
-     * @param isneedquali
-     */
-    public void setIsneedquali(Integer isneedquali) {
-        this.isneedquali = isneedquali;
-    }
 
     /**
      * @return qualifications
@@ -1531,47 +1036,6 @@ public class Tel {
         this.qualifications = qualifications;
     }
 
-    /**
-     * @return sp_qualifications
-     */
-    public Integer getSpQualifications() {
-        return spQualifications;
-    }
-
-    /**
-     * @param spQualifications
-     */
-    public void setSpQualifications(Integer spQualifications) {
-        this.spQualifications = spQualifications;
-    }
-
-    /**
-     * @return cateid_sp_qualifications
-     */
-    public Integer getCateidSpQualifications() {
-        return cateidSpQualifications;
-    }
-
-    /**
-     * @param cateidSpQualifications
-     */
-    public void setCateidSpQualifications(Integer cateidSpQualifications) {
-        this.cateidSpQualifications = cateidSpQualifications;
-    }
-
-    /**
-     * @return status_sp_qualifications
-     */
-    public Integer getStatusSpQualifications() {
-        return statusSpQualifications;
-    }
-
-    /**
-     * @param statusSpQualifications
-     */
-    public void setStatusSpQualifications(Integer statusSpQualifications) {
-        this.statusSpQualifications = statusSpQualifications;
-    }
 
     /**
      * @return lat
@@ -1695,4 +1159,7 @@ public class Tel {
     public void setBusinessType(String businessType) {
         this.businessType = businessType;
     }
+
+
+
 }

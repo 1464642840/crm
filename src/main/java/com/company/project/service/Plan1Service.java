@@ -1,7 +1,9 @@
 package com.company.project.service;
+import com.alibaba.fastjson.JSONObject;
 import com.company.project.model.Plan1;
 import com.company.project.core.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,4 +16,6 @@ public interface Plan1Service extends Service<Plan1> {
     List<Plan1> findByMyCondition(Map<String, Object> map);
 
     String tags(String ord);
+
+    JSONObject statistics(HashMap<String, Object> map);
 }

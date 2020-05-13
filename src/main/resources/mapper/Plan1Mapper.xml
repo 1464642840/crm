@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.company.project.dao.Plan1Mapper">
-
-    
     <resultMap id="BaseResultMap" type="com.company.project.model.Plan1">
         <!--
           WARNING - @mbg.generated
@@ -39,8 +37,25 @@
         <result column="lat" jdbcType="DECIMAL" property="lat"/>
         <result column="intro" jdbcType="LONGNVARCHAR" property="intro"/>
         <result column="intro2" jdbcType="LONGNVARCHAR" property="intro2"/>
-        <collection property="dianPingList" javaType="com.company.project.model.Dianping">
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="others" jdbcType="NVARCHAR" property="others"/>
+        <result column="tags" jdbcType="INTEGER" property="tags"/>
+        <result column="selfTag" jdbcType="INTEGER" property="selfTag"/>
+        <result column="companyName" jdbcType="VARCHAR" property="companyName"/>
+        <result column="replyId" jdbcType="INTEGER" property="replyId"/>
+
+        <collection property="dianpingList" javaType="ArrayList" ofType="com.company.project.model.Dianping">
             <id property="id" column="id"></id>
+            <result column="dianping_id" property="id"/>
+            <result column="dianping_intro" property="intro"/>
+            <result column="dianping_name" property="name"/>
+            <result column="dianping_date7" property="date7"/>
+        </collection>
+        <collection property="tagList" javaType="ArrayList" ofType="com.company.project.model.Tags">
+            <id property="id" column="id"></id>
+            <result column="tag_time" property="time"/>
+            <result column="tag_id" property="id"/>
+            <result column="tag_person" property="person"/>
         </collection>
     </resultMap>
 
@@ -48,23 +63,64 @@
     <select id="findByMyCondition" resultMap="BaseResultMap" parameterType="map">
         select
         pl.ord,
-        g.username,
+        g.username username,
         t.name companyName,
         pl.intro,
         pl.tags,
         ry.id replyId,
-        pl.others,
+        (select count(*) from tags tag2 where tag2.plan1=pl.ord and tag2.person=g.username) selfTag,
         pl.date7,
-        dp.id,
-        dp.name,
-        dp.intro,
-        dp.date7
+        pl.others others,
+        dp.id dianping_id,
+        dp.intro dianping_intro,
+        dp.name dianping_name,
+        dp.date7 dianping_date7,
+        tag.id tag_id,
+        tag.time tag_time,
+        tag.person tag_person
+        from plan1 pl
+        left join tags tag on tag.plan1=pl.ord
+        left join gate g on pl.cateid=g.ord
+        left join tel t on t.ord = pl.company
+        left join reply ry on ry.plan1 = pl.ord
+        left join dianping dp on dp.ord=ry.id
+
+        where 1=1
+        <if test="company != null">
+            and pl.company=#{company}
+        </if>
+        <if test="createDate1!=null">
+            and pl.date7>=#{createDate1}
+        </if>
+        <if test="bumen != null">
+            and g.sorce = (select distinct g1.ord from gate1 g1 where g1.sort1 = #{bumen})
+        </if>
+        <if test="createDate2!=null">
+            and pl.date7&lt;=#{createDate2}
+        </if>
+
+        <if test="keyword!=null">
+            and(t.name like '%${keyword}%' or g.username like '%${keyword}%')
+        </if>
+        order by pl.date7 desc,dp.date7 asc
+
+    </select>
+
+
+
+    <select id="findByMyCondition_COUNT" resultType="Long" parameterType="map">
+        select
+        count(*)
+
         from plan1 pl
         left join gate g on pl.cateid=g.ord
         left join tel t on t.ord = pl.company
         left join reply ry on ry.plan1 = pl.ord
-        left  join dianping dp on dp.ord = ry.id
+
         where 1=1
+        <if test="company != null">
+            and pl.company=#{company}
+        </if>
         <if test="createDate1!=null">
             and pl.date7>=#{createDate1}
         </if>
@@ -79,6 +135,14 @@
             and(t.name like '%${keyword}%' or g.username like '%${keyword}%')
         </if>
 
+    </select>
+
+
+    <select id="statistics" resultType="java.util.HashMap">
+        select
+        (select count(pl.ord) from plan1 pl where pl.order1=#{ywyId} and pl.date7>#{year} ) year,
+        (select count(pl.ord) from plan1 pl where pl.order1=#{ywyId} and pl.date7>#{month} ) month,
+        (select count(pl.ord) from plan1 pl where pl.order1=#{ywyId} and pl.date7>#{week} ) week
     </select>
 
 

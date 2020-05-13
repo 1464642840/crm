@@ -42,16 +42,18 @@ public class TagsServiceImpl extends AbstractService<Tags> implements TagsServic
             tags.setTime(new Date());
             tags.setId(null);
             tagsMapper.insertSelective(tags);
-            Plan1 plan1 = plan1Mapper.selectByPrimaryKey(tags.getPlan1()); //更新点赞数
-            plan1.setTags(plan1.getTags()+1);
+            //更新点赞数
+            Plan1 plan1 = plan1Mapper.selectByPrimaryKey(tags.getPlan1());
+            plan1.setTags(plan1.getTags() + 1);
             plan1Mapper.updateByPrimaryKeySelective(plan1);
 
             return ResultGenerator.genSuccessResult(1);
         } else {
             Tags tags2 = tags1.get(0);
             int i = tagsMapper.deleteByPrimaryKey(tags2.getId());
-            Plan1 plan1 = plan1Mapper.selectByPrimaryKey(tags.getPlan1()); //更新点赞数
-            plan1.setTags(plan1.getTags()-1);
+            //更新点赞数
+            Plan1 plan1 = plan1Mapper.selectByPrimaryKey(tags.getPlan1());
+            plan1.setTags(plan1.getTags() - 1);
             plan1Mapper.updateByPrimaryKeySelective(plan1);
             if (i > 0) {
                 return ResultGenerator.genSuccessResult(-1);

@@ -23,33 +23,34 @@ public abstract class AbstractService<T> implements Service<T> {
         ParameterizedType pt = (ParameterizedType) this.getClass().getGenericSuperclass();
         modelClass = (Class<T>) pt.getActualTypeArguments()[0];
     }
-
+    @Override
     public int save(T model) {
         int i = mapper.insertSelective(model);
         return i;
     }
-
+    @Override
     public T saveOneKey(T model) {
         mapper.insertUseGeneratedKeys(model);
         return model;
     }
-
+    @Override
     public void save(List<T> models) {
         mapper.insertList(models);
     }
-
+    @Override
     public void deleteById(Integer id) {
         mapper.deleteByPrimaryKey(id);
     }
 
+    @Override
     public void deleteByIds(String ids) {
         mapper.deleteByIds(ids);
     }
-
+    @Override
     public void update(T model) {
         mapper.updateByPrimaryKeySelective(model);
     }
-
+    @Override
     public T findById(Integer id) {
         return mapper.selectByPrimaryKey(id);
     }
@@ -66,16 +67,20 @@ public abstract class AbstractService<T> implements Service<T> {
             throw new ServiceException(e.getMessage(), e);
         }
     }
-
+    @Override
     public List<T> findByIds(String ids) {
         return mapper.selectByIds(ids);
     }
-
+    @Override
     public List<T> findByCondition(Condition condition) {
         return mapper.selectByCondition(condition);
     }
-
+    @Override
     public List<T> findAll() {
         return mapper.selectAll();
+    }
+    @Override
+    public void updateSelective(T model){
+        mapper.updateByPrimaryKeySelective(model);
     }
 }

@@ -2,8 +2,10 @@ package com.company.project.service;
 import com.company.project.model.Tel;
 import com.company.project.core.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -12,4 +14,6 @@ import java.util.Map;
 public interface TelService extends Service<Tel> {
 
     List<Tel> findByMyCondition(Map map);
+
+    void updateCustInfo(Tel tel, HashMap<String, String> map, HashMap<String, String> map1, int baseParamCount, Set<String> numSet);
 }

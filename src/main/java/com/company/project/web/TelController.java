@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
+import com.company.project.core.ServiceException;
 import com.company.project.model.Tel;
 import com.company.project.service.TelService;
 import com.company.project.utils.string.StrUtils;
@@ -15,11 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by CodeGenerator on 2020/04/21.
@@ -43,8 +42,40 @@ public class TelController {
     }
 
     @PostMapping("/update")
-    public Result update(Tel tel) {
-        telService.update(tel);
+    public Result update(Tel tel, HttpServletRequest request) {
+        Map<String, String[]> parameterMap = request.getParameterMap();
+
+        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, String> map1 = new HashMap<>();
+        Set<String> numSet = new HashSet<>();
+        Iterator iterator = parameterMap.keySet().iterator();
+        int baseParamCount=0;
+        while (iterator.hasNext()) {
+
+            String key = (String) iterator.next();
+            if (!key.startsWith("@")) {
+                if(!"ord".equals(key)){
+                    baseParamCount++;
+                }
+            } else if (key.contains("_")) {
+                numSet.add(key.split("_")[1]);
+                if (key.startsWith("@meju")) {
+                    map.put(key.split("_")[1], parameterMap.get(key)[0]);
+                } else {
+                    map1.put(key.split("_")[1], parameterMap.get(key)[0]);
+                }
+
+            }
+        }
+
+        try {
+            telService.updateCustInfo(tel, map, map1,baseParamCount,numSet);
+        } catch (
+                ServiceException e) {
+            return ResultGenerator.genFailResult(e.getMessage());
+        }
+
+
         return ResultGenerator.genSuccessResult();
     }
 
@@ -63,7 +94,7 @@ public class TelController {
     }
 
     @PostMapping("/custList")
-    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1,@RequestParam(defaultValue = "0") Long visitDate2,@RequestParam(defaultValue = "") String keyword,@RequestParam(defaultValue = "0") Long createDate1,@RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
+    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1, @RequestParam(defaultValue = "0") Long visitDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -76,26 +107,26 @@ public class TelController {
         map.put("order", order); //排序方式
 
         try {
-            if(createDate1!=0){
-                map.put("createDate1",sdf.format(new Date(createDate1))); //开始创建时间
+            if (createDate1 != 0) {
+                map.put("createDate1", sdf.format(new Date(createDate1))); //开始创建时间
             }
-            if(createDate2!=0){
-                map.put("createDate2",sdf.format(new Date(createDate2))); //结束创建时间
+            if (createDate2 != 0) {
+                map.put("createDate2", sdf.format(new Date(createDate2+3600*24*1000))); //结束创建时间
             }
-            if(visitDate1!=0){
-                map.put("visitDate1",sdf.format(new Date(visitDate1))); //开始拜访时间
+            if (visitDate1 != 0) {
+                map.put("visitDate1", sdf.format(new Date(visitDate1))); //开始拜访时间
             }
-            if(visitDate2!=0){
-                map.put("visitDate2",sdf.format(new Date(visitDate2))); //结束创建时间
+            if (visitDate2 != 0) {
+                map.put("visitDate2", sdf.format(new Date(visitDate2+3600*24*1000))); //结束创建时间
             }
-        }catch (Exception e){
-            return  ResultGenerator.genFailResult("日期格式有误");
+        } catch (Exception e) {
+            return ResultGenerator.genFailResult("日期格式有误");
         }
 
-        if(!StrUtils.isNull(businessType)){
+        if (!StrUtils.isNull(businessType)) {
             map.put("businessType", businessType); //企业类型
         }
-        if(!StrUtils.isNull(keyword)){
+        if (!StrUtils.isNull(keyword)) {
             map.put("keyword", keyword); //关键字
         }
         if ("distance".equals(order)) {
@@ -109,7 +140,7 @@ public class TelController {
         List<Tel> list = telService.findByMyCondition(map);
         PageInfo pageInfo = new PageInfo(list);
 
-        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile","businessType"};
+        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile", "businessType"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Tel.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);

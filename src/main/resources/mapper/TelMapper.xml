@@ -108,6 +108,35 @@
         <result column="c3" jdbcType="LONGNVARCHAR" property="c3"/>
         <result column="c4" jdbcType="LONGNVARCHAR" property="c4"/>
     </resultMap>
+    <update id="updateCustomerField" parameterType="java.util.Map">
+
+        update ERP_CustomValues
+        set FValue = case FieldsID
+        <foreach collection="map.keys" index="key" item="value">
+            when ${value} then (select ee.CValue from ERP_CustomOptions ee where ee.ID = #{map[${value}]})
+        </foreach>
+        end
+        where OrderId=${ord} and FieldsID in
+        <foreach collection="map.keys" item="value" separator="," open="(" close=")">
+            ${value}
+        </foreach>
+
+    </update>
+
+    <update id="updateCustomerField2" parameterType="java.util.Map">
+
+        update ERP_CustomValues
+        set FValue = case FieldsID
+        <foreach collection="map.keys" index="key" item="value">
+            when ${value} then #{map[${value}]}
+        </foreach>
+        end
+        where OrderId=${ord} and FieldsID in
+        <foreach collection="map.keys" item="value" separator="," open="(" close=")">
+            ${value}
+        </foreach>
+
+    </update>
 
 
     <select id="findByMyCondition" resultMap="BaseResultMap" parameterType="map">
@@ -168,7 +197,7 @@
             and pl.date8&lt;=#{visitDate2}
         </if>
         AND t.name IS NOT NULL
-        AND p.del = 1
+        AND (p.del = 1 or p.del is null)
         <if test=" keyword!=null">
             and t.name like '%${keyword}%'
         </if>
@@ -219,7 +248,7 @@
         </if>
         WHERE t.del = 1
         AND t.name IS NOT NULL
-        AND p.del = 1
+        AND (p.del = 1 or p.del is null)
         <if test="visitDate1!=null">
             and pl.date8>=#{visitDate1}
         </if>
@@ -248,6 +277,16 @@
         FROM
         gate g
         WHERE g.username = #{ywy})
+    </select>
+    <select id="selectExistExtendFields" resultType="java.lang.String">
+        select e.FieldsID
+        from ERP_CustomValues e
+        where e.OrderID=#{ord}
+        and e.FieldsID  in
+        <foreach collection="numSet" item="s" close=")" open="(" separator=",">
+            ${s}
+        </foreach>
+
     </select>
 
 

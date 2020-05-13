@@ -1,5 +1,7 @@
 package com.company.project.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -10,7 +12,7 @@ public class Tags {
     private Integer plan1;
 
     private String person;
-
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date time;
 
     /**
@@ -67,5 +69,24 @@ public class Tags {
      */
     public void setTime(Date time) {
         this.time = time;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Tags tags = (Tags) o;
+
+        if (!person.equals(tags.person)) return false;
+        return time.equals(tags.time);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = person.hashCode();
+        result = 31 * result + time.hashCode();
+        return result;
     }
 }
