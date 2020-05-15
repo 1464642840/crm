@@ -94,7 +94,7 @@ public class TelController {
     }
 
     @PostMapping("/custList")
-    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1, @RequestParam(defaultValue = "0") Long visitDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
+    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1, @RequestParam(defaultValue = "0") Long visitDate2, @RequestParam(defaultValue = "") String keyword,@RequestParam(defaultValue = "") String custName, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -128,6 +128,9 @@ public class TelController {
         }
         if (!StrUtils.isNull(keyword)) {
             map.put("keyword", keyword); //关键字
+        }
+        if (!StrUtils.isNull(custName)) {
+            map.put("custName", custName); //关键字
         }
         if ("distance".equals(order)) {
             if (lng * lat == 0) {

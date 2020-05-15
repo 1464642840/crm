@@ -35,32 +35,11 @@ public class Plan1Controller {
     private Plan1Service plan1Service;
 
     @PostMapping("/add")
-    public Result add(Plan1 plan1, @RequestParam(defaultValue = "0") Long nowDate) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date(nowDate);
-        Calendar instance = Calendar.getInstance();
-        instance.setTime(date);
+    public Result add(Plan1 plan1, @RequestParam(defaultValue = "0") Long nowDate,@RequestParam(defaultValue = "") String name,@RequestParam(defaultValue = "") String name2) throws ParseException {
 
-        plan1.setGate(4);
-        plan1.setSort1(1);
 
-        plan1.setDate1(sdf.parse(sdf.format(date)));
-        plan1.setDate8(new Date());
-        plan1.setDate7(new Date());
-        plan1.setIsxunhuan(0);
-        plan1.setStarttime1(instance.get(Calendar.HOUR_OF_DAY) - 1 + "");
-        plan1.setStarttime2(instance.get(Calendar.MINUTE) + "");
-        plan1.setTime1(instance.get(Calendar.HOUR_OF_DAY) + 1 + "");
-        plan1.setTime2(instance.get(Calendar.MINUTE) + "");
-        plan1.setComplete(1 + "");
-        plan1.setCateid3(3);
-        plan1.setIntro2("");
-        plan1.setOption1(0);
-        plan1.setDate4(sdf.parse(sdf.format(date)));
-        plan1.setStartdate1(sdf.parse(sdf.format(date)));
-        plan1.setOrder1(plan1.getCateid() + "");
 
-        Plan1 plan11 = plan1Service.saveOneKey(plan1);
+        Plan1 plan11 = plan1Service.savePlan1OneKey(plan1,nowDate,name,name2);
         return ResultGenerator.genSuccessResult(plan11.getOrd());
     }
 

@@ -1,6 +1,7 @@
 package com.company.project.core;
 
 
+import com.company.project.model.Person;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Condition;
@@ -12,6 +13,7 @@ import java.util.List;
 /**
  * 基于通用MyBatis Mapper插件的Service接口的实现
  */
+
 public abstract class AbstractService<T> implements Service<T> {
 
     @Autowired
@@ -83,4 +85,6 @@ public abstract class AbstractService<T> implements Service<T> {
     public void updateSelective(T model){
         mapper.updateByPrimaryKeySelective(model);
     }
+
+
 }

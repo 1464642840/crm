@@ -1,5 +1,6 @@
 package com.company.project.core;
 
+import com.company.project.model.Person;
 import com.company.project.model.Tel;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 import tk.mybatis.mapper.entity.Condition;
@@ -23,4 +24,5 @@ public interface Service<T> {
     List<T> findAll();//获取所有
 
     void updateSelective(T tel);
+
 }

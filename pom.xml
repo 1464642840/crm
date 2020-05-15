@@ -151,6 +151,16 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>spire.xls</groupId>
+            <artifactId>spire-xls</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/lib/Spire.Xls.jar</systemPath>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>
@@ -165,6 +175,14 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
                 </configuration>
             </plugin>
         </plugins>

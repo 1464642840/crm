@@ -42,8 +42,12 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
             telMapper.updateByPrimaryKeySelective(tel);
         }
 
+
         //判断扩展字段在数据库有没有记录
-        List<String> exist = telMapper.selectExistExtendFields(tel.getOrd(), numSet);
+        List<String> exist = new ArrayList<>();
+        if(!CollectionUtils.isEmpty(numSet)){
+            telMapper.selectExistExtendFields(tel.getOrd(), numSet);
+        }
 
 
         //修改枚举类型
