@@ -61,8 +61,8 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
             plan1.setDate1(sdf.parse(sdf.format(date)));
         } catch (ParseException e) {
         }
-        plan1.setDate8(new Date());
-        plan1.setDate7(new Date());
+        plan1.setDate8(new Date(nowDate));
+        plan1.setDate7(new Date(nowDate));
         plan1.setIsxunhuan(0);
         plan1.setStarttime1(instance.get(Calendar.HOUR_OF_DAY) - 1 + "");
         plan1.setStarttime2(instance.get(Calendar.MINUTE) + "");

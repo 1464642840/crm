@@ -45,31 +45,10 @@ public class TelController {
     public Result update(Tel tel, HttpServletRequest request) {
         Map<String, String[]> parameterMap = request.getParameterMap();
 
-        HashMap<String, String> map = new HashMap<>();
-        HashMap<String, String> map1 = new HashMap<>();
-        Set<String> numSet = new HashSet<>();
-        Iterator iterator = parameterMap.keySet().iterator();
-        int baseParamCount=0;
-        while (iterator.hasNext()) {
 
-            String key = (String) iterator.next();
-            if (!key.startsWith("@")) {
-                if(!"ord".equals(key)){
-                    baseParamCount++;
-                }
-            } else if (key.contains("_")) {
-                numSet.add(key.split("_")[1]);
-                if (key.startsWith("@meju")) {
-                    map.put(key.split("_")[1], parameterMap.get(key)[0]);
-                } else {
-                    map1.put(key.split("_")[1], parameterMap.get(key)[0]);
-                }
-
-            }
-        }
 
         try {
-            telService.updateCustInfo(tel, map, map1,baseParamCount,numSet);
+            telService.updateCustInfo(tel, parameterMap);
         } catch (
                 ServiceException e) {
             return ResultGenerator.genFailResult(e.getMessage());

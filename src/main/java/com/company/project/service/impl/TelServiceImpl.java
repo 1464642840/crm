@@ -33,7 +33,34 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
     }
 
     @Override
-    public void updateCustInfo(Tel tel, HashMap<String, String> map, HashMap<String, String> map1, int baseParamCount, Set<String> numSet) {
+    public void updateCustInfo(Tel tel, Map<String, String[]> parameterMap) {
+
+
+        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, String> map1 = new HashMap<>();
+        Set<String> numSet = new HashSet<>();
+        Iterator iterator = parameterMap.keySet().iterator();
+        int baseParamCount=0;
+        while (iterator.hasNext()) {
+
+            String key = (String) iterator.next();
+            if (!key.startsWith("@")) {
+                if(!"ord".equals(key)){
+                    baseParamCount++;
+                }
+            } else if (key.contains("_")) {
+                numSet.add(key.split("_")[1]);
+                if (key.startsWith("@meju")) {
+                    map.put(key.split("_")[1], parameterMap.get(key)[0]);
+                } else {
+                    map1.put(key.split("_")[1], parameterMap.get(key)[0]);
+                }
+
+            }
+        }
+
+
+
         //更新客户的基本信息
 
 
@@ -46,18 +73,10 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
         //判断扩展字段在数据库有没有记录
         List<String> exist = new ArrayList<>();
         if(!CollectionUtils.isEmpty(numSet)){
-            telMapper.selectExistExtendFields(tel.getOrd(), numSet);
+            exist= telMapper.selectExistExtendFields(tel.getOrd(), numSet);
         }
 
 
-        //修改枚举类型
-        if (!map.isEmpty()) {
-            telMapper.updateCustomerField(map, tel.getOrd());
-        }
-        //修改普通扩展字段
-        if (!map1.isEmpty()) {
-            telMapper.updateCustomerField2(map1, tel.getOrd());
-        }
 
         //新增扩展字段
         List<ErpCustomvalues> erpCustomvaluesList = new ArrayList<>();
@@ -76,5 +95,21 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
         if(!CollectionUtils.isEmpty(erpCustomvaluesList)) {
             erpCustomvaluesMapper.insertList(erpCustomvaluesList);
         }
+
+
+        //修改枚举类型
+        if (!map.isEmpty()) {
+            telMapper.updateCustomerField(map, tel.getOrd());
+        }
+        //修改普通扩展字段
+        if (!map1.isEmpty()) {
+            telMapper.updateCustomerField2(map1, tel.getOrd());
+        }
+    }
+
+    @Override
+    public Tel insertKey(Tel tel) {
+       telMapper.inserKey(tel);
+        return tel;
     }
 }

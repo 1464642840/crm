@@ -65,6 +65,7 @@
         pl.ord,
         g.username username,
         t.name companyName,
+        pl.company,
         pl.intro,
         pl.tags,
         ry.id replyId,

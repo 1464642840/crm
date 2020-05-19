@@ -7,13 +7,16 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
+import com.company.project.model.Person;
 import com.company.project.model.Plan1;
 import com.company.project.model.Tags;
 import com.company.project.model.Tel;
+import com.company.project.service.PersonService;
 import com.company.project.service.Plan1Service;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +36,9 @@ import java.util.*;
 public class Plan1Controller {
     @Resource
     private Plan1Service plan1Service;
+    @Autowired
+    @Resource PersonService personService;
+
 
     @PostMapping("/add")
     public Result add(Plan1 plan1, @RequestParam(defaultValue = "0") Long nowDate,@RequestParam(defaultValue = "") String name,@RequestParam(defaultValue = "") String name2) throws ParseException {
@@ -58,6 +64,13 @@ public class Plan1Controller {
     @PostMapping("/detail")
     public Result detail(@RequestParam Integer id) {
         Plan1 plan1 = plan1Service.findById(id);
+        if(plan1.getPerson()!=null){
+            Person byId = personService.findById(plan1.getPerson());
+            if(byId!=null){
+                plan1.setPersonObj(byId);
+            }
+
+        }
         return ResultGenerator.genSuccessResult(plan1);
     }
 
@@ -108,7 +121,7 @@ public class Plan1Controller {
         PageInfo pageInfo = new PageInfo(list);
 
 
-        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList"};
+        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList","company"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Plan1.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);

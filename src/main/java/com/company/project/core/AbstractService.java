@@ -86,5 +86,23 @@ public abstract class AbstractService<T> implements Service<T> {
         mapper.updateByPrimaryKeySelective(model);
     }
 
+    @Override
+    public int saveSelective(T model) {
+      return  mapper.insertSelective(model);
 
+    }
+
+    @Override
+    public T getByT(T t) {
+        return mapper.selectOne(t);
+    }
+
+    @Override
+    public T saveSelectOneKey(T t) {
+        Class<?> clazz = t.getClass();
+        clazz.getDeclaredFields();
+        
+
+        return null;
+    }
 }

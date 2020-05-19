@@ -83,6 +83,17 @@ public class Plan1 {
 
     private String type;
 
+    @Transient
+    private  Person personObj;
+
+    public Person getPersonObj() {
+        return personObj;
+    }
+
+    public void setPersonObj(Person personObj) {
+        this.personObj = personObj;
+    }
+
     public String getType() {
         return type;
     }

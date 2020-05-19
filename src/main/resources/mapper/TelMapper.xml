@@ -232,7 +232,7 @@
     </select>
 
 
-    <select id="findByMyCondition_COUNT" resultType="Long">
+    <select id="findByMyCondition_COUNT_" resultType="Long">
         select count(DISTINCT
 
         t.ord )
@@ -288,12 +288,23 @@
         select e.FieldsID
         from ERP_CustomValues e
         where e.OrderID=#{ord}
-        and e.FieldsID  in
+        and e.FieldsID in
         <foreach collection="numSet" item="s" close=")" open="(" separator=",">
             ${s}
         </foreach>
 
     </select>
+
+
+    <insert id="inserKey" parameterType="com.company.project.model.Tel" useGeneratedKeys="true" keyProperty="ord"
+            keyColumn="ord">
+
+        insert into tel(date1,date2,sort2,sort,cateadd,cateorder1,person,email,address)
+		values(#{date1},#{date2},#{sort2},#{sort},#{cateadd},#{cateorder1},#{person},#{email},#{address})
+
+
+    </insert>
+
 
 
 </mapper>

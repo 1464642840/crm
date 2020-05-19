@@ -18,4 +18,6 @@ public interface TelMapper extends Mapper<Tel> {
     void updateCustomerField2(@Param("map") HashMap<String, String> map1, @Param("ord") Integer ord);
 
     List<String> selectExistExtendFields(@Param("ord") Integer ord, @Param("numSet") Set<String> numSet);
+
+    void inserKey(Tel tel);
 }

@@ -2,7 +2,9 @@ package com.conpany.project;
 
 
 import com.company.project.Application;
+import com.company.project.dao.PersonMapper;
 import com.company.project.model.Tel;
+import com.company.project.service.PersonService;
 import com.company.project.service.Plan1Service;
 import com.company.project.service.TelService;
 import org.junit.Test;
@@ -25,21 +27,26 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)//这里的Application是springboot的启动类名
 @WebAppConfiguration
-@Transactional
-@Rollback
 public  class Tester {
+
+
 
 
     @Autowired
     private  TelService  telService;
     @Autowired
     private Plan1Service plan1Service;
+    @Autowired
+    private PersonService personService;
+
     @Test
     public  void tes222() throws ParseException, InterruptedException, IOException {
 
      SysnTest sysnTest = new SysnTest();
      sysnTest.setTelService(telService);
      sysnTest.setPlan1Service(plan1Service);
+     sysnTest.setPersonService(personService);
+
      sysnTest.test2();
     }
 }

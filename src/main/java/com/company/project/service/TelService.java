@@ -15,5 +15,7 @@ public interface TelService extends Service<Tel> {
 
     List<Tel> findByMyCondition(Map map);
 
-    void updateCustInfo(Tel tel, HashMap<String, String> map, HashMap<String, String> map1, int baseParamCount, Set<String> numSet);
+    void updateCustInfo(Tel tel, Map<String, String[]> map);
+
+    Tel insertKey(Tel tel);
 }
