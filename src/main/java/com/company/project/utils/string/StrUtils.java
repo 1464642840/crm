@@ -1,6 +1,8 @@
 package com.company.project.utils.string;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,6 +45,29 @@ public class StrUtils {
 			return url;
 		} else {
 			return "http://" + url.trim();
+		}
+	}
+
+	public static void getJSONArrayToObj(int[] key, int j, JSONArray jsonArray, JSONObject res, int[] sl) {
+		String temp = jsonArray.getString(key[j]);
+		if (j == key.length - 1) {
+			JSONArray o0 = res.containsKey(temp) ? res.getJSONArray(temp) : new JSONArray();
+			if (sl != null) {
+				for (int k = 0; k < sl.length; k++) {
+					if (o0.size() > k) {
+						o0.set(k, jsonArray.getDouble(sl[k]) + o0.getDouble(k));
+					} else {
+						o0.add(k, jsonArray.getDouble(sl[k]));
+					}
+				}
+			}
+			res.put(temp, o0);
+			return;
+
+		} else {
+			JSONObject o0 = res.containsKey(temp) ? res.getJSONObject(temp) : new JSONObject();
+			getJSONArrayToObj(key, ++j, jsonArray, o0, sl);
+			res.put(temp, o0);
 		}
 	}
 

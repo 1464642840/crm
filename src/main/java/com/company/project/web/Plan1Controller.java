@@ -13,6 +13,7 @@ import com.company.project.model.Tags;
 import com.company.project.model.Tel;
 import com.company.project.service.PersonService;
 import com.company.project.service.Plan1Service;
+import com.company.project.utils.date.DateUtils;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -37,17 +38,27 @@ public class Plan1Controller {
     @Resource
     private Plan1Service plan1Service;
     @Autowired
-    @Resource PersonService personService;
+    @Resource
+    PersonService personService;
 
 
     @PostMapping("/add")
-    public Result add(Plan1 plan1, @RequestParam(defaultValue = "0") Long nowDate,@RequestParam(defaultValue = "") String name,@RequestParam(defaultValue = "") String name2) throws ParseException {
+    public Result add(Plan1 plan1, @RequestParam(defaultValue = "0") Long nowDate, @RequestParam(defaultValue = "") String name, @RequestParam(defaultValue = "") String name2) throws ParseException {
 
 
-
-        Plan1 plan11 = plan1Service.savePlan1OneKey(plan1,nowDate,name,name2);
+        Plan1 plan11 = plan1Service.savePlan1OneKey(plan1, nowDate, name, name2);
         return ResultGenerator.genSuccessResult(plan11.getOrd());
     }
+
+
+    @PostMapping("/updatePlan")
+    public Result updatePlan(Plan1 plan1, @RequestParam(defaultValue = "0") Long nowDate, @RequestParam(defaultValue = "") String name, @RequestParam(defaultValue = "") String name2, @RequestParam Integer replyId) throws ParseException {
+
+
+        Plan1 plan11 = plan1Service.upDatePlan1OneKey(plan1, nowDate, name, name2, replyId);
+        return ResultGenerator.genSuccessResult(plan11.getOrd());
+    }
+
 
     @PostMapping("/delete")
     public Result delete(@RequestParam Integer id) {
@@ -64,9 +75,9 @@ public class Plan1Controller {
     @PostMapping("/detail")
     public Result detail(@RequestParam Integer id) {
         Plan1 plan1 = plan1Service.findById(id);
-        if(plan1.getPerson()!=null){
+        if (plan1.getPerson() != null) {
             Person byId = personService.findById(plan1.getPerson());
-            if(byId!=null){
+            if (byId != null) {
                 plan1.setPersonObj(byId);
             }
 
@@ -75,11 +86,13 @@ public class Plan1Controller {
     }
 
     @PostMapping("/list")
-    public Result list(@RequestParam(required = false) Integer company, @RequestParam(defaultValue = "") String bumen, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "0") Integer size, @RequestParam(defaultValue = "") String ywy) {
+    public Result list(@RequestParam(required = false) String position, @RequestParam(required = false) Integer company, @RequestParam(defaultValue = "") String bumen, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "0") Integer size, @RequestParam(defaultValue = "") String ywy) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Map<String, Object> map = new HashMap<>();
-        if (!StrUtils.isNull(ywy)) {
-            map.put("ywy", ywy);
+        if (!"总经理".equals(position)) {
+            if (!StrUtils.isNull(ywy)) {
+                map.put("ywy", ywy);
+            }
         }
         if (!StrUtils.isNull(keyword)) {
             map.put("keyword", keyword);
@@ -91,7 +104,7 @@ public class Plan1Controller {
             }
             //结束创建时间
             if (createDate2 != 0) {
-                map.put("createDate2", sdf.format(new Date(createDate2+3600*24*1000)));
+                map.put("createDate2", sdf.format(new Date(createDate2 + 3600 * 24 * 1000)));
             }
         } catch (Exception e) {
             return ResultGenerator.genFailResult("日期格式有误");
@@ -121,7 +134,7 @@ public class Plan1Controller {
         PageInfo pageInfo = new PageInfo(list);
 
 
-        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList","company"};
+        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList", "company"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Plan1.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);
@@ -136,14 +149,14 @@ public class Plan1Controller {
     @PostMapping("/statistics")
     public Result statistics(@RequestParam Integer ywyId) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        if (ywyId == null) {
-            return ResultGenerator.genFailResult("ywyId不能为空");
-        }
+
         /*
          * 用于存储mybaties的查询参数
          * */
         HashMap<String, Object> map = new HashMap<String, Object>(7);
-        map.put("ywyId", ywyId);
+        if (ywyId != null) {
+            map.put("ywyId", ywyId);
+        }
         //获得本年的第一天
         Date year = sdf.parse(new SimpleDateFormat("yyyy").format(new Date()) + "-01-01");
         //获取本月的第一天
@@ -154,11 +167,18 @@ public class Plan1Controller {
         cal.set(Calendar.DAY_OF_WEEK, 2);
         Date week = cal.getTime();
 
+        //获取当前
+        Date day = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+
+        //获取当前季度
+        Date quarter = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(DateUtils.getQuarterFirst()));
         //将日期存入map集合中
 
         map.put("year", year);
         map.put("month", month);
         map.put("week", week);
+        map.put("day", day);
+        map.put("quarter", quarter);
         //从数据表plan1查询数据
         JSONObject obj = plan1Service.statistics(map);
         return ResultGenerator.genSuccessResult(obj);

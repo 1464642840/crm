@@ -6,6 +6,7 @@ import com.company.project.dao.PersonMapper;
 import com.company.project.model.Tel;
 import com.company.project.service.PersonService;
 import com.company.project.service.Plan1Service;
+import com.company.project.service.StatisticsService;
 import com.company.project.service.TelService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -27,28 +30,43 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)//这里的Application是springboot的启动类名
 @WebAppConfiguration
-public  class Tester {
-
-
+public class Tester {
 
 
     @Autowired
-    private  TelService  telService;
+    private TelService telService;
     @Autowired
     private Plan1Service plan1Service;
     @Autowired
     private PersonService personService;
 
+    @Autowired
+    StatisticsService statisticsService;
+
     @Test
-    public  void tes222() throws ParseException, InterruptedException, IOException {
+    public void tes222() throws ParseException, InterruptedException, IOException {
 
-     SysnTest sysnTest = new SysnTest();
-     sysnTest.setTelService(telService);
-     sysnTest.setPlan1Service(plan1Service);
-     sysnTest.setPersonService(personService);
+        SysnTest sysnTest = new SysnTest();
+        sysnTest.setTelService(telService);
+        sysnTest.setPlan1Service(plan1Service);
+        sysnTest.setPersonService(personService);
 
-     sysnTest.test2();
+        sysnTest.test2();
     }
+
+
+    @Test
+    public void testStatictics() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date Date1 = sdf.parse("2019-03-6");
+            Date Date2 = sdf.parse("2021-05-6");
+            statisticsService.getSaleManDataStatistics("塑料", Date1, Date2);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 

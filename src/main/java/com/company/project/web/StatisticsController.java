@@ -8,6 +8,7 @@ import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
 import com.company.project.core.ServiceException;
 import com.company.project.model.Tel;
+import com.company.project.service.StatisticsService;
 import com.company.project.service.TelService;
 import com.company.project.utils.erp.ErpDataUtils;
 import com.company.project.utils.poi.XssFUtils;
@@ -52,8 +53,11 @@ import java.util.concurrent.TimeUnit;
  */
 @RestController
 @RequestMapping("/zb/statistics/")
-public class StatisticsController  {
+public class StatisticsController {
 
+
+    @Autowired
+    private StatisticsService statisticsService;
 
     public static void main(String[] args) {
         String[] fileds = {"FSalerId.FName", "FQty"};
@@ -62,6 +66,29 @@ public class StatisticsController  {
 
     }
 
+    /**
+     * 业务员拜访以及订单统计
+     */
+    @RequestMapping("/saleAndVisitData")
+    public Result saleManDataStatistics(@RequestParam String type, @RequestParam Long startDate, @RequestParam Long endDate) throws ParseException {
+        Date sD = new Date(startDate);
+        Date eD = new Date(endDate + 3600 * 24 * 1000);
+        JSONObject obj = statisticsService.getSaleManDataStatistics(type, sD, eD);
+        return ResultGenerator.genSuccessResult(obj);
+
+    }
+
+    /**
+     * 客户拜访数据统计
+     */
+    @RequestMapping("/customerVisitData")
+    public Result customerVisitStatistics(@RequestParam String type, @RequestParam Long startDate, @RequestParam Long endDate) throws ParseException {
+        Date sD = new Date(startDate);
+        Date eD = new Date(endDate + 3600 * 24 * 1000);
+        JSONObject obj = statisticsService.getcustomerVisitStatistics(type, sD, eD);
+        return ResultGenerator.genSuccessResult(obj);
+
+    }
 
 
 }

@@ -59,6 +59,16 @@ public class Reply {
 
     private String intro;
 
+    private Integer isNew;
+
+    public Integer getIsNew() {
+        return isNew;
+    }
+
+    public void setIsNew(Integer isNew) {
+        this.isNew = isNew;
+    }
+
     /**
      * @return id
      */
@@ -436,4 +446,7 @@ public class Reply {
     public void setIntro(String intro) {
         this.intro = intro;
     }
+
+
+
 }

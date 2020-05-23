@@ -1,5 +1,6 @@
 package com.company.project.utils.crm;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.company.project.utils.web.HttpHelper;
 
@@ -66,5 +67,34 @@ public class CrmUtils {
                     json, HEAD, "utf-8");
             System.out.println(sendPOST);
         }
+    }
+
+
+
+
+
+    /**
+     * 获得所以业务员账号信息
+     * */
+    public static JSONObject getAllCrmAccountInfos() {
+        if (LOGIN_INFO == null) {
+            crmLogin();
+        }
+        String json = "{session:'" + LOGIN_INFO.getJSONObject("header").getString("session")
+                + "',cmdkey:'refresh', datas:[";
+        json += " {id:'pagesize', val:'2000'},"; // 每页记录数
+        json += " {id:'pageindex', val:'1'}"; // 数据页标
+        json += "]}";
+        JSONObject sendPOST = HttpHelper.sendPOST(CRM_DOMAIN + "/SYSA/mobilephone/officemanage/businesscard/list.asp",
+                json, HEAD, "utf-8");
+
+        JSONArray jsonArray = sendPOST.getJSONObject("body").getJSONObject("source").getJSONObject("table")
+                .getJSONArray("rows");
+        JSONObject res = new JSONObject();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONArray jsonArray2 = jsonArray.getJSONArray(i);
+            res.put(jsonArray2.getString(1), jsonArray2.getString(0));
+        }
+        return res;
     }
 }

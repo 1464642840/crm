@@ -197,7 +197,7 @@
             and pl.date8&lt;=#{visitDate2}
         </if>
         <if test="custName!=null">
-            and pl.name&lt;=#{custName}
+            and t.name&lt;=#{custName}
         </if>
         AND t.name IS NOT NULL
         AND (p.del = 1 or p.del is null)
@@ -259,7 +259,7 @@
             and pl.date8&lt;=#{visitDate2}
         </if>
         <if test="custName!=null">
-            and pl.name&lt;=#{custName}
+            and t.name&lt;=#{custName}
         </if>
         <if test="keyword!=null">
             and t.name like'%${keyword}%'

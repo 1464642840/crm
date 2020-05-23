@@ -20,4 +20,6 @@ public interface Plan1Service extends Service<Plan1> {
     JSONObject statistics(HashMap<String, Object> map);
 
     Plan1 savePlan1OneKey(Plan1 plan1, Long nowDate, String name, String name2);
+
+    Plan1 upDatePlan1OneKey(Plan1 plan1, Long nowDate, String name, String name2, Integer replyId);
 }

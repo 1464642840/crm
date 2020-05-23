@@ -6,6 +6,7 @@ import com.company.project.model.ErpCustomvalues;
 import com.company.project.model.Tel;
 import com.company.project.service.TelService;
 import com.company.project.core.AbstractService;
+import com.company.project.utils.string.StrUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -20,7 +21,6 @@ import java.util.*;
  * Created by CodeGenerator on 2020/04/21.
  */
 @Service
-@Transactional
 public class TelServiceImpl extends AbstractService<Tel> implements TelService {
     @Resource
     private TelMapper telMapper;
@@ -51,7 +51,9 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
             } else if (key.contains("_")) {
                 numSet.add(key.split("_")[1]);
                 if (key.startsWith("@meju")) {
-                    map.put(key.split("_")[1], parameterMap.get(key)[0]);
+                    if(!StrUtils.isNull(parameterMap.get(key)[0])) {
+                        map.put(key.split("_")[1], parameterMap.get(key)[0]);
+                    }
                 } else {
                     map1.put(key.split("_")[1], parameterMap.get(key)[0]);
                 }

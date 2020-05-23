@@ -57,6 +57,10 @@ public class ReplyController {
         return ResultGenerator.genSuccessResult();
     }
 
+
+
+
+
     @PostMapping("/detail")
     public Result detail(@RequestParam Integer id) {
         Reply reply = replyService.findById(id);

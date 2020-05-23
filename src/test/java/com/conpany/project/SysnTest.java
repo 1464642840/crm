@@ -49,7 +49,7 @@ public class SysnTest {
     private PersonService personService;
 
 
-    final JSONObject allYwyInfo = JSONObject.parseObject("{\"鲍平\":\"79\",\"测试\":\"75\",\"查振毅\":\"90\",\"陈黎明\":\"103\",\"豆耀仁\":\"104\",\"范小光\":\"130\",\"方文军\":\"99\",\"方祝红\":\"94\",\"干娜\":\"102\",\"韩非\":\"109\",\"贺东旭\":\"81\",\"胡小乔\":\"135\",\"胡永航\":\"95\",\"黄莺\":\"124\",\"霍树岭\":\"114\",\"江珩\":\"96\",\"孔源\":\"120\",\"李宾\":\"78\",\"李光耀\":\"117\",\"李金洙\":\"93\",\"李婉\":\"128\",\"梁丽琴\":\"100\",\"林春兰\":\"105\",\"林洁卿\":\"84\",\"刘奎\":\"112\",\"刘胜才\":\"119\",\"卢德志\":\"107\",\"卢贤锋\":\"132\",\"吕晗\":\"106\",\"吕慧\":\"123\",\"罗羡结\":\"98\",\"宓巧丽\":\"65\",\"任硕\":\"116\",\"任贞茹\":\"125\",\"沙金宝\":\"77\",\"邵冬冬\":\"87\",\"宋开楠\":\"126\",\"孙美霞\":\"97\",\"陶涛\":\"89\",\"王建兵\":\"115\",\"王江\":\"92\",\"王丽婷\":\"91\",\"王仁丽\":\"101\",\"王与同\":\"113\",\"吴艳君\":\"121\",\"夏冬\":\"118\",\"徐金城\":\"88\",\"徐丽\":\"136\",\"杨飞\":\"111\",\"杨磊\":\"110\",\"杨南涛\":\"83\",\"杨瑜民\":\"85\",\"叶美玲\":\"122\",\"叶正生\":\"86\",\"张静\":\"133\",\"赵志武\":\"108\",\"郑秀娜\":\"80\",\"周春\":\"131\",\"周玲玲\":\"76\",\"周宁\":\"82\",\"周田菊\":\"134\",\"朱婉秋\":\"127\",\"朱文健\":\"129\"}\n");
+    final JSONObject allYwyInfo = CrmUtils.getAllCrmAccountInfos();
 
     public PersonService getPersonService() {
         return personService;
@@ -96,7 +96,7 @@ public class SysnTest {
         File[] files2 = floder2.listFiles();
         File[] files1 = ArrayUtils.addAll(files, files2);
         for (File file : files1) {
-            if (!file.getName().startsWith("周春")) {
+            if (file.getName().startsWith("~")) {
                 continue;
             }
 
@@ -115,7 +115,7 @@ public class SysnTest {
 
         }
 
-        Thread.sleep(2000000);
+        Thread.sleep(20000000);
 
 
     }
@@ -164,7 +164,15 @@ public class SysnTest {
                     String stringCellValue = cell.getValue();
 
                     try {
+                        if (lastName.startsWith("后续合作推进计划")) {
+                            baifang.put("plan", stringCellValue);
+                            if(baifang.containsKey("date")){
+                                Object clone = baifang.clone();
 
+                                baiFangArr.add(clone);
+                                baifang =new JSONObject();
+                            }
+                        }
                         if (StrUtils.isNull(stringCellValue.trim())) {
                             continue;
                         }
@@ -177,12 +185,53 @@ public class SysnTest {
                     }
 
 
+
+
+                    if ((k > 15 && j == dateRow && stringCellValue.startsWith("20"))||lastName.startsWith("拜访总结")) {
+
+
+                        //2019/10/9（韩非，朱文健陪同）
+                        if (stringCellValue.contains("陪同") || stringCellValue.contains("(") || stringCellValue.contains("（")) {
+                            String[] split = null;
+                            if (stringCellValue.contains("（")) {
+                                split = stringCellValue.split("（");
+                            } else if (stringCellValue.contains("(")) {
+                                split = stringCellValue.split("\\(");
+                            } else if (stringCellValue.contains("\n")) {
+                                split = stringCellValue.split("\n");
+                            }
+
+                            try {
+                                baifang.put("date", simpleDateFormat.format(simpleDateFormat2.parse(split[0])));
+                            } catch (Exception e) {
+                                try {
+                                    baifang.put("date", simpleDateFormat.format(simpleDateFormat.parse(split[0])));
+                                } catch (Exception parseException) {
+                                    System.err.println(file.getName() + " " + sheetName + " " + res.getString("name"));
+                                    parseException.printStackTrace();
+                                }
+                            }
+
+                            String replace = split[1].replaceAll("人", "").replaceAll("、", ",").replaceAll("：", "").replaceAll("陪同", "").replaceAll("）", "").replaceAll("\\)", "").replace("，", "");
+                            baifang.put("others", replace);
+                        } else {
+                            try {
+                                baifang.put("date", simpleDateFormat.format(simpleDateFormat2.parse(stringCellValue)));
+                            } catch (Exception e) {
+                                try {
+                                    baifang.put("date", simpleDateFormat.format(simpleDateFormat.parse(stringCellValue)));
+                                } catch (Exception parseException) {
+                                    System.err.println(sheetName + file.getName());
+                                }
+                            }
+                        }
+                    }
+
+
                     if (lastName.startsWith("其他信息获取")) {
                         baifang.put("happen", stringCellValue);
-                    } else if (lastName.startsWith("后续合作推进计划")) {
-                        baifang.put("plan", stringCellValue);
-                        baiFangArr.add(baifang);
-                    } else if (lastName.startsWith("企业主要上游供应商")) {
+                    }
+                     else if (lastName.startsWith("企业主要上游供应商")) {
 
                         JSONArray product = new JSONArray();
 
@@ -289,86 +338,11 @@ public class SysnTest {
                         }
 
 
-                    } else if (k > 15 && j == dateRow && stringCellValue.startsWith("20")) {
-
-                        baifang = new JSONObject();
-                        //2019/10/9（韩非，朱文健陪同）
-                        if (stringCellValue.contains("陪同") || stringCellValue.contains("(") || stringCellValue.contains("（")) {
-                            String[] split = null;
-                            if (stringCellValue.contains("（")) {
-                                split = stringCellValue.split("（");
-                            } else if (stringCellValue.contains("(")) {
-                                split = stringCellValue.split("\\(");
-                            } else if (stringCellValue.contains("\n")) {
-                                split = stringCellValue.split("\n");
-                            }
-
-                            try {
-                                baifang.put("date", simpleDateFormat.format(simpleDateFormat2.parse(split[0])));
-                            } catch (Exception e) {
-                                try {
-                                    baifang.put("date", simpleDateFormat.format(simpleDateFormat.parse(split[0])));
-                                } catch (Exception parseException) {
-                                    System.err.println(file.getName() + " " + sheetName + " " + res.getString("name"));
-                                    parseException.printStackTrace();
-                                }
-                            }
-
-                            String replace = split[1].replaceAll("人", "").replaceAll("、", ",").replaceAll("：", "").replaceAll("陪同", "").replaceAll("）", "").replaceAll("\\)", "").replace("，", "");
-                            baifang.put("others", replace);
-                        } else {
-                            try {
-                                baifang.put("date", simpleDateFormat.format(simpleDateFormat2.parse(stringCellValue)));
-                            } catch (Exception e) {
-                                try {
-                                    baifang.put("date", simpleDateFormat.format(simpleDateFormat.parse(stringCellValue)));
-                                } catch (Exception parseException) {
-                                    System.err.println(sheetName + file.getName());
-                                }
-                            }
-                        }
                     }
 
                     switch (lastName.trim()) {
 
-                        case "拜访总结":
-                            baifang = new JSONObject();
-                            //2019/10/9（韩非，朱文健陪同）
-                            if (stringCellValue.contains("陪同") || stringCellValue.contains("(") || stringCellValue.contains("（")) {
-                                String[] split = null;
-                                if (stringCellValue.contains("（")) {
-                                    split = stringCellValue.split("（");
-                                } else if (stringCellValue.contains("(")) {
-                                    split = stringCellValue.split("\\(");
-                                } else if (stringCellValue.contains("\n")) {
-                                    split = stringCellValue.split("\n");
-                                }
 
-                                try {
-                                    baifang.put("date", simpleDateFormat.format(simpleDateFormat2.parse(split[0])));
-                                } catch (Exception e) {
-                                    try {
-                                        baifang.put("date", simpleDateFormat.format(simpleDateFormat.parse(split[0])));
-                                    } catch (Exception parseException) {
-                                        System.err.println(sheetName + file.getName());
-                                    }
-                                }
-                                String replace = split[1].replaceAll("人", "").replaceAll("、", ",").replaceAll("：", "").replaceAll("陪同", "").replaceAll("）", "").replaceAll("\\)", "").replace("，", "");
-                                baifang.put("others", replace);
-                            } else {
-
-                                try {
-                                    baifang.put("date", simpleDateFormat.format(simpleDateFormat2.parse(stringCellValue)));
-                                } catch (Exception e) {
-                                    try {
-                                        baifang.put("date", simpleDateFormat.format(simpleDateFormat.parse(stringCellValue)));
-                                    } catch (Exception parseException) {
-                                        System.err.println(sheetName + file.getName());
-                                    }
-                                }
-                            }
-
-                            break;
 
 
                         case "拜访目的":
@@ -379,7 +353,10 @@ public class SysnTest {
                             break;
                         case "拜访人姓名":
                         case "拜访/来访人姓名":
-                            res.put("ywy", stringCellValue);
+                            stringCellValue = stringCellValue.contains("、") ? stringCellValue.substring(0, stringCellValue.indexOf("、")) : stringCellValue;
+                            stringCellValue = stringCellValue.contains("（") ? stringCellValue.substring(0, stringCellValue.indexOf("（")) : stringCellValue;
+                            stringCellValue = stringCellValue.contains("/") ? stringCellValue.substring(0, stringCellValue.indexOf("/")) : stringCellValue;
+                            res.put("ywy", stringCellValue.trim());
                             break;
                         case "企业全称":
                             res.put("name", stringCellValue);
@@ -448,7 +425,7 @@ public class SysnTest {
                             }
 
 
-                            res.put("@IsNot_15", isNew);
+                            res.put("@IsNot_15", isNew ? '是' : '否');
                             break;
                         case "企业基本情况":
 
@@ -592,6 +569,7 @@ public class SysnTest {
             res.put("baifang", baiFangArr);
             System.out.println(res);
             array.add(res);
+            System.out.println(res);
 
         }
 
@@ -603,215 +581,222 @@ public class SysnTest {
         //登录Crm
         CrmUtils.crmLogin();
         for (int j = 0; j < arr.size(); j++) {
-            JSONObject obj = arr.getJSONObject(j);
+            try {
+                JSONObject obj = arr.getJSONObject(j);
 
-            final String name = obj.getString("name");
-            if (StrUtils.isNull(name)) {
-                return;
-            }
-            //1.查询有没有当前客户
-            Condition condition = new Condition(Tel.class);
-            Example.Criteria criteria = condition.createCriteria();
-            criteria.andEqualTo("name", name);
-            criteria.andEqualTo("del", 1);
-            List<Tel> tels = telService.findByCondition(condition);
-            String address = StrUtils.isNull(obj.getString("address")) ? "" : obj.getString("address");
-            String ywy = StrUtils.isNull(obj.getString("ywy")) ? "" : obj.getString("ywy");
-            int ywyId = allYwyInfo.getIntValue(ywy);
-            String product = StrUtils.isNull(obj.getString("product")) ? "" : obj.getString("product");
-            String c2 = StrUtils.isNull(obj.getString("c2")) ? "" : obj.getString("c2");
-            String c3 = StrUtils.isNull(obj.getString("c3")) ? "" : obj.getString("c3");
-            Integer personId = null;
-            JSONObject linkMan = obj.getJSONObject("linkMan");
-            String person_name = StrUtils.isNull(linkMan.getString("person_name")) ? "" : linkMan.getString("person_name");
-            String mobile = StrUtils.isNull(linkMan.getString("mobile")) ? "" : linkMan.getString("mobile");
-            String sex = StrUtils.isNull(linkMan.getString("sex")) ? "" : linkMan.getString("sex");
-            String job = StrUtils.isNull(linkMan.getString("job")) ? "" : linkMan.getString("job");
-            String hobby = StrUtils.isNull(linkMan.getString("hobby")) ? "" : linkMan.getString("hobby");
-            Tel tel = null;
-            if (!CollectionUtils.isEmpty(tels)) {
-                //更新客户
-
-                tel = tels.get(0);
-
-                //联系人
-                Integer ord = tel.getOrd();
-                //根据手机号和名称查找联系人是否存在
-
-                condition = new Condition(Person.class);
-                criteria = condition.createCriteria();
-                criteria.andEqualTo("name", person_name);
+                if(!obj.containsKey("name")){
+                    continue;
+                }
+                final String name = obj.getString("name");
+                if (StrUtils.isNull(name)) {
+                    return;
+                }
+                //1.查询有没有当前客户
+                Condition condition = new Condition(Tel.class);
+                Example.Criteria criteria = condition.createCriteria();
+                criteria.andEqualTo("name", name);
                 criteria.andEqualTo("del", 1);
-                criteria.andEqualTo("mobile", mobile);
-                criteria.andEqualTo("company", ord);
+                List<Tel> tels = telService.findByCondition(condition);
+                String address = StrUtils.isNull(obj.getString("address")) ? "" : obj.getString("address");
+                String ywy = StrUtils.isNull(obj.getString("ywy")) ? "" : obj.getString("ywy");
+                int ywyId = allYwyInfo.getIntValue(ywy);
+                String product = StrUtils.isNull(obj.getString("product")) ? "" : obj.getString("product");
+                String c2 = StrUtils.isNull(obj.getString("c2")) ? "" : obj.getString("c2");
+                String c3 = StrUtils.isNull(obj.getString("c3")) ? "" : obj.getString("c3");
+                Integer personId = null;
+                JSONObject linkMan = obj.getJSONObject("linkMan");
+                String person_name = StrUtils.isNull(linkMan.getString("person_name")) ? "" : linkMan.getString("person_name");
+                String mobile = StrUtils.isNull(linkMan.getString("mobile")) ? "" : linkMan.getString("mobile");
+                String sex = StrUtils.isNull(linkMan.getString("sex")) ? "" : linkMan.getString("sex");
+                String job = StrUtils.isNull(linkMan.getString("job")) ? "" : linkMan.getString("job");
+                String hobby = StrUtils.isNull(linkMan.getString("hobby")) ? "" : linkMan.getString("hobby");
+                Tel tel = null;
+                if (!CollectionUtils.isEmpty(tels)) {
+                    //更新客户
 
-                List<Person> persons = personService.findByCondition(condition);
-                //更新联系人信息
-                if (!CollectionUtils.isEmpty(persons)) {
-                    Person person = persons.get(0);
-                    if (!StrUtils.isNull(sex)) {
+                    tel = tels.get(0);
+
+                    //联系人
+                    Integer ord = tel.getOrd();
+                    //根据手机号和名称查找联系人是否存在
+
+                    condition = new Condition(Person.class);
+                    criteria = condition.createCriteria();
+                    criteria.andEqualTo("name", person_name);
+                    criteria.andEqualTo("del", 1);
+                    criteria.andEqualTo("mobile", mobile);
+                    criteria.andEqualTo("company", ord);
+
+                    List<Person> persons = personService.findByCondition(condition);
+                    //更新联系人信息
+                    if (!CollectionUtils.isEmpty(persons)) {
+                        Person person = persons.get(0);
+                        if (!StrUtils.isNull(sex)) {
+                            person.setSex(sex);
+                        }
+                        if (!StrUtils.isNull(hobby)) {
+                            person.setMsn(hobby);
+                        }
+                        if (!StrUtils.isNull(job)) {
+                            person.setJob(job);
+                        }
+                        personId = person.getOrd();
+                        personService.update(person);
+                        //以下是联系人不存在情况 新增联系人
+                    } else {
+                        Person person = new Person();
                         person.setSex(sex);
-                    }
-                    if (!StrUtils.isNull(hobby)) {
-                        person.setMsn(hobby);
-                    }
-                    if (!StrUtils.isNull(job)) {
+                        person.setName(person_name);
+                        person.setMobile(mobile);
                         person.setJob(job);
+                        person.setMsn(hobby);
+                        person.setCompany(ord);
+                        person.setAddress(address);
+                        person.setSort(3 + "");
+                        person.setSort1(21 + "");
+                        person.setOrder1(2);
+                        person.setDate7(new Date());
+                        person.setDel(1);
+                        person.setBirthdayType(1);
+                        person.setBDays(-1);
+                        person.setCateid(allYwyInfo.getIntValue(ywy));
+                        person = personService.insert(person);
+                        personId = person.getOrd();
+                        System.out.println(person.getOrd());
+
                     }
-                    personId = person.getOrd();
-                    personService.update(person);
-                    //以下是联系人不存在情况 新增联系人
-                } else {
-                    Person person = new Person();
-                    person.setSex(sex);
-                    person.setName(person_name);
-                    person.setMobile(mobile);
-                    person.setJob(job);
-                    person.setMsn(hobby);
-                    person.setCompany(ord);
-                    person.setAddress(address);
-                    person.setSort(3 + "");
-                    person.setSort1(21 + "");
-                    person.setOrder1(2);
-                    person.setDate7(new Date());
-                    person.setDel(1);
-                    person.setBirthdayType(1);
-                    person.setBDays(-1);
-                    person.setCateid(allYwyInfo.getIntValue(ywy));
-                    person = personService.insert(person);
-                    personId = person.getOrd();
-                    System.out.println(person.getOrd());
+
 
                 }
+                //客户不存在的情况,新增客户
+                if (tel == null) {
+                    tel = new Tel();
+                    tel.setDate2(new Date());
+                    tel.setDate1(new Date());
+                    tel.setSort2(1);
+                    tel.setSort(3 + "");
+                    tel.setCateadd(ywyId);
+                    tel.setCateorder1(ywyId);
+                    tel.setPerson(personId);
+                    tel.setEmail(address);
+                    tel.setAddress(address);
+                    Tel tel1 = telService.insertKey(tel);
+
+                    tel = tel1;
+
+                    //联系人
+                    Integer ord = tel.getOrd();
+                    //根据手机号和名称查找联系人是否存在
+
+                    condition = new Condition(Person.class);
+                    criteria = condition.createCriteria();
+                    criteria.andEqualTo("name", person_name);
+                    criteria.andEqualTo("del", 1);
+                    criteria.andEqualTo("mobile", mobile);
+                    criteria.andEqualTo("company", ord);
+
+                    List<Person> persons = personService.findByCondition(condition);
+                    //更新联系人信息
+                    if (!CollectionUtils.isEmpty(persons)) {
+                        Person person = persons.get(0);
+                        if (!StrUtils.isNull(sex)) {
+                            person.setSex(sex);
+                        }
+                        if (!StrUtils.isNull(hobby)) {
+                            person.setMsn(hobby);
+                        }
+                        if (!StrUtils.isNull(job)) {
+                            person.setJob(job);
+                        }
+                        personId = person.getOrd();
+                        personService.update(person);
+                        //以下是联系人不存在情况 新增联系人
+                    } else {
+                        Person person = new Person();
+                        person.setSex(sex);
+                        person.setName(person_name);
+                        person.setMobile(mobile);
+                        person.setJob(job);
+                        person.setMsn(hobby);
+                        person.setCompany(ord);
+                        person.setAddress(address);
+                        person.setSort(3 + "");
+                        person.setSort1(21 + "");
+                        person.setOrder1(2);
+                        person.setDate7(new Date());
+                        person.setDel(1);
+                        person.setBirthdayType(1);
+                        person.setBDays(-1);
+                        person.setCateid(allYwyInfo.getIntValue(ywy));
+                        person = personService.insert(person);
+                        personId = person.getOrd();
+                        System.out.println(person.getOrd());
+
+                    }
 
 
-            }
-            //客户不存在的情况,新增客户
-            if (tel == null) {
-                tel = new Tel();
-                tel.setDate2(new Date());
-                tel.setDate1(new Date());
-                tel.setSort2(1);
-                tel.setSort(3 + "");
-                tel.setCateadd(ywyId);
-                tel.setCateorder1(ywyId);
+                }
                 tel.setPerson(personId);
-                tel.setEmail(address);
-                tel.setAddress(address);
-                Tel tel1 = telService.insertKey(tel);
+                tel.setName(name);
+                tel.setProduct(product);
+                tel.setC2(c2);
+                tel.setC3(c3);
+                tel.setCateid(ywyId);
+                tel.setDel(1);
 
-                tel =tel1;
-
-                //联系人
-                Integer ord = tel.getOrd();
-                //根据手机号和名称查找联系人是否存在
-
-                condition = new Condition(Person.class);
-                criteria = condition.createCriteria();
-                criteria.andEqualTo("name", person_name);
-                criteria.andEqualTo("del", 1);
-                criteria.andEqualTo("mobile", mobile);
-                criteria.andEqualTo("company", ord);
-
-                List<Person> persons = personService.findByCondition(condition);
-                //更新联系人信息
-                if (!CollectionUtils.isEmpty(persons)) {
-                    Person person = persons.get(0);
-                    if (!StrUtils.isNull(sex)) {
-                        person.setSex(sex);
+                Map<String, String[]> map = new HashMap<>();
+                Set<String> strings = obj.keySet();
+                for (String string : strings) {
+                    if (string.startsWith("@")) {
+                        map.put(string, new String[]{obj.get(string) + ""});
                     }
-                    if (!StrUtils.isNull(hobby)) {
-                        person.setMsn(hobby);
+                }
+                map.put("name", new String[]{name});
+                telService.updateCustInfo(tel, map);
+
+
+                //客户指派
+                CrmUtils.CrmCustomerDesignate(tel.getOrd() + "", ywyId + "", false);
+
+
+                //新增洽谈
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                JSONArray baifang = obj.getJSONArray("baifang");
+                if (!CollectionUtils.isEmpty(baifang)) {
+                    for (int i = 0; i < baifang.size(); i++) {
+                        Plan1 plan1 = new Plan1();
+                        JSONObject jsonObject = baifang.getJSONObject(i);
+                        String date = jsonObject.getString("date");
+                        String result = jsonObject.getString("result");
+                        String plan = jsonObject.getString("plan");
+                        String others = jsonObject.getString("others");
+                        String target = jsonObject.getString("target");
+                        JSONObject intro = new JSONObject();
+                        intro.put("result", result);
+                        intro.put("plan", plan);
+                        intro.put("target", target);
+                        plan1.setIntro(intro.toString());
+                        plan1.setOthers(others);
+                        plan1.setOrder1(ywyId + "");
+                        plan1.setCompany(tel.getOrd());
+                        plan1.setPerson(personId);
+                        plan1.setAddress(address);
+                        plan1.setCateid(ywyId);
+                        plan1.setType("上门拜访");
+
+                        try {
+                            plan1Service.savePlan1OneKey(plan1, simpleDateFormat.parse(date.substring(0, 10)).getTime(), ywy, person_name);
+                        } catch (Exception e) {
+                            System.out.println(date);
+                            System.out.println(ywy + "" + name);
+                            e.printStackTrace();
+                        }
+
                     }
-                    if (!StrUtils.isNull(job)) {
-                        person.setJob(job);
-                    }
-                    personId = person.getOrd();
-                    personService.update(person);
-                    //以下是联系人不存在情况 新增联系人
-                } else {
-                    Person person = new Person();
-                    person.setSex(sex);
-                    person.setName(person_name);
-                    person.setMobile(mobile);
-                    person.setJob(job);
-                    person.setMsn(hobby);
-                    person.setCompany(ord);
-                    person.setAddress(address);
-                    person.setSort(3 + "");
-                    person.setSort1(21 + "");
-                    person.setOrder1(2);
-                    person.setDate7(new Date());
-                    person.setDel(1);
-                    person.setBirthdayType(1);
-                    person.setBDays(-1);
-                    person.setCateid(allYwyInfo.getIntValue(ywy));
-                    person = personService.insert(person);
-                    personId = person.getOrd();
-                    System.out.println(person.getOrd());
-
                 }
-
-
-            }
-            tel.setPerson(personId);
-            tel.setName(name);
-            tel.setProduct(product);
-            tel.setC2(c2);
-            tel.setC3(c3);
-            tel.setCateid(ywyId);
-            tel.setDel(1);
-
-            Map<String, String[]> map = new HashMap<>();
-            Set<String> strings = obj.keySet();
-            for (String string : strings) {
-                if (string.startsWith("@")) {
-                    map.put(string, new String[]{obj.get(string) + ""});
-                }
-            }
-            map.put("name", new String[]{name});
-            telService.updateCustInfo(tel, map);
-
-
-
-
-
-
-
-
-
-
-            //客户指派
-            CrmUtils.CrmCustomerDesignate(tel.getOrd() + "", ywyId + "", false);
-
-
-            //新增洽谈
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            JSONArray baifang = obj.getJSONArray("baifang");
-            if (!CollectionUtils.isEmpty(baifang)) {
-                for (int i = 0; i < baifang.size(); i++) {
-                    Plan1 plan1 = new Plan1();
-                    JSONObject jsonObject = baifang.getJSONObject(i);
-                    String date = jsonObject.getString("date");
-                    String result = jsonObject.getString("result");
-                    String plan = jsonObject.getString("plan");
-                    String others = jsonObject.getString("others");
-                    String target = jsonObject.getString("target");
-                    JSONObject intro = new JSONObject();
-                    intro.put("result", result);
-                    intro.put("plan", plan);
-                    intro.put("target", target);
-                    plan1.setIntro(intro.toString());
-                    plan1.setOthers(others);
-                    plan1.setOrder1(ywyId + "");
-                    plan1.setCompany(tel.getOrd());
-                    plan1.setPerson(personId);
-                    plan1.setAddress(address);
-                    plan1.setCateid(ywyId);
-
-                    plan1Service.savePlan1OneKey(plan1, simpleDateFormat.parse(date.substring(0, 10)).getTime(), ywy, person_name);
-
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
             }
         }
     }

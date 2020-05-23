@@ -87,6 +87,9 @@
         left join dianping dp on dp.ord=ry.id
 
         where 1=1
+        <if test="ywy != null">
+            and pl.cateid=(select ord from gate where username=#{ywy})
+        </if>
         <if test="company != null">
             and pl.company=#{company}
         </if>
@@ -106,7 +109,6 @@
         order by pl.date7 desc,dp.date7 asc
 
     </select>
-
 
 
     <select id="findByMyCondition_COUNT" resultType="Long" parameterType="map">
@@ -141,9 +143,16 @@
 
     <select id="statistics" resultType="java.util.HashMap">
         select
-        (select count(pl.ord) from plan1 pl where pl.order1=#{ywyId} and pl.date7>#{year} ) year,
-        (select count(pl.ord) from plan1 pl where pl.order1=#{ywyId} and pl.date7>#{month} ) month,
-        (select count(pl.ord) from plan1 pl where pl.order1=#{ywyId} and pl.date7>#{week} ) week
+        (select count(pl.ord) from plan1 pl where 1=1  <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
+        pl.date7>=#{year} ) year,
+        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
+        pl.date7>=#{month} ) month,
+        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
+        pl.date7>=#{week} ) week,
+        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
+        pl.date7>=#{day} ) day,
+        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
+        pl.date7>=#{quarter} ) quarter
     </select>
 
 
