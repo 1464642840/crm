@@ -62,7 +62,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (int i = 0; i < dateByParam.size(); i++) {
             JSONArray jsonArray = dateByParam.getJSONArray(i);
             String ywy = jsonArray.getString(0);
-            Double sl = jsonArray.getDouble(1);
+            Double sl = jsonArray.getDouble(1)/1000;
             JSONObject ywyObj = res.containsKey(ywy) ? res.getJSONObject(ywy) : new JSONObject();
             ywyObj.put(SALECOUNKEY, NumberUtils.add(sl, ywyObj.containsKey(SALECOUNKEY) ? ywyObj.getDouble(SALECOUNKEY) : 0));
             res.put(ywy, ywyObj);
@@ -117,7 +117,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                 Integer newVisit2 = jsonObject2.getInteger("newVisit");
                 Integer oldVisit2 = jsonObject2.getInteger("oldVisit");
                 Integer all2 = (newVisit2 == null ? 0 : newVisit2) + (oldVisit2 == null ? 0 : oldVisit2);
-                return all2 - all1;
+                return all1 - all2;
 
             }
         });
@@ -242,7 +242,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             public int compare(String o1, String o2) {
                 Integer b1 = res.getJSONObject(o1).containsKey("visitCustomerCount") ? res.getJSONObject(o1).getIntValue("visitCustomerCount") : 0;
                 Integer b2 = res.getJSONObject(o2).containsKey("visitCustomerCount") ? res.getJSONObject(o2).getIntValue("visitCustomerCount") : 0;
-                return b2 - b1;
+                return b1 - b2;
             }
         });
 

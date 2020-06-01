@@ -52,6 +52,7 @@ public class GateController {
         return ResultGenerator.genSuccessResult(gate);
     }
 
+    @CrossOrigin(origins = "*",maxAge = 3600)
     @PostMapping("/list")
     public Result list(@RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "100") Integer size,@RequestParam(defaultValue="0") Integer bumenId) {
         PageHelper.startPage(page, size);

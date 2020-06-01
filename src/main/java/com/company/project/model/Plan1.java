@@ -83,6 +83,17 @@ public class Plan1 {
 
     private String type;
 
+    @Column(name = "isPeitong")
+    private  Integer isPeitong =1;
+
+    public Integer getIsPeitong() {
+        return isPeitong;
+    }
+
+    public void setIsPeitong(Integer isPeitong) {
+        this.isPeitong = isPeitong;
+    }
+
     @Transient
     private  Person personObj;
 

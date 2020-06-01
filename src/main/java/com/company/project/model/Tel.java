@@ -1150,6 +1150,16 @@ public class Tel {
     }
 
     @Transient
+    private Integer isHisCustomer;
+
+    public Integer getIsHisCustomer() {
+        return isHisCustomer;
+    }
+
+    public void setIsHisCustomer(Integer isHisCustomer) {
+        this.isHisCustomer = isHisCustomer;
+    }
+    @Transient
     private String businessType;
 
     public String getBusinessType() {

@@ -7,24 +7,26 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
-import com.company.project.model.Person;
-import com.company.project.model.Plan1;
-import com.company.project.model.Tags;
-import com.company.project.model.Tel;
+import com.company.project.core.ServiceException;
+import com.company.project.model.*;
 import com.company.project.service.PersonService;
 import com.company.project.service.Plan1Service;
 import com.company.project.utils.date.DateUtils;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -55,8 +57,13 @@ public class Plan1Controller {
     public Result updatePlan(Plan1 plan1, @RequestParam(defaultValue = "0") Long nowDate, @RequestParam(defaultValue = "") String name, @RequestParam(defaultValue = "") String name2, @RequestParam Integer replyId) throws ParseException {
 
 
-        Plan1 plan11 = plan1Service.upDatePlan1OneKey(plan1, nowDate, name, name2, replyId);
-        return ResultGenerator.genSuccessResult(plan11.getOrd());
+        try {
+            Plan1 plan11 = plan1Service.upDatePlan1OneKey(plan1, nowDate, name, name2, replyId);
+            return ResultGenerator.genSuccessResult(plan11.getOrd());
+        } catch (ServiceException e) {
+            return ResultGenerator.genFailResult(e.getMessage());
+        }
+
     }
 
 
@@ -86,13 +93,16 @@ public class Plan1Controller {
     }
 
     @PostMapping("/list")
-    public Result list(@RequestParam(required = false) String position, @RequestParam(required = false) Integer company, @RequestParam(defaultValue = "") String bumen, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "0") Integer size, @RequestParam(defaultValue = "") String ywy) {
+    public Result list(@RequestParam(required = false) String position, @RequestParam(required = false) Integer company, @RequestParam(defaultValue = "") String bumen, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "15") Integer size, @RequestParam(defaultValue = "") String ywy) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Map<String, Object> map = new HashMap<>();
-        if (!"总经理".equals(position)) {
-            if (!StrUtils.isNull(ywy)) {
-                map.put("ywy", ywy);
-            }
+        if (!StrUtils.isNull(ywy)) {
+            map.put("ywy", ywy);
+        }
+
+
+        if (!StrUtils.isNull(position)) {
+            map.put("position", position);
         }
         if (!StrUtils.isNull(keyword)) {
             map.put("keyword", keyword);
@@ -115,10 +125,12 @@ public class Plan1Controller {
         if (company != null) {
             map.put("company", company);
         }
+        map.put("page", page);
+        map.put("size", size);
 
 
         //对点赞列表利用set进行去重
-        PageHelper.startPage(page, size);
+
         List<Plan1> list = plan1Service.findByMyCondition(map);
         for (int i = 0; i < list.size(); i++) {
             Plan1 plan1 = list.get(i);
@@ -134,7 +146,7 @@ public class Plan1Controller {
         PageInfo pageInfo = new PageInfo(list);
 
 
-        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList", "company"};
+        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList", "company","isPeitong"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Plan1.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);
@@ -147,7 +159,7 @@ public class Plan1Controller {
      * 业务员拜访统计
      */
     @PostMapping("/statistics")
-    public Result statistics(@RequestParam Integer ywyId) throws ParseException {
+    public Result statistics(@RequestParam Integer ywyId, @RequestParam String position) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
         /*
@@ -157,6 +169,7 @@ public class Plan1Controller {
         if (ywyId != null) {
             map.put("ywyId", ywyId);
         }
+        map.put("position", position);
         //获得本年的第一天
         Date year = sdf.parse(new SimpleDateFormat("yyyy").format(new Date()) + "-01-01");
         //获取本月的第一天
@@ -165,7 +178,7 @@ public class Plan1Controller {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.WEEK_OF_MONTH, 0);
         cal.set(Calendar.DAY_OF_WEEK, 2);
-        Date week = cal.getTime();
+        Date week = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime()));
 
         //获取当前
         Date day = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
@@ -182,6 +195,64 @@ public class Plan1Controller {
         //从数据表plan1查询数据
         JSONObject obj = plan1Service.statistics(map);
         return ResultGenerator.genSuccessResult(obj);
+    }
+
+    /**
+     * 业务员拜访统计导出
+     */
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @PostMapping("/export")
+    public Result statistics(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) String ywyIds, @RequestParam String type, @RequestParam String bumen) throws ParseException {
+        String url = "";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyy-MM-dd");
+        Date sd = null;
+        Date ed = null;
+        if (!StrUtils.isNull(endDate)) {
+            ed = simpleDateFormat.parse(endDate);
+            ed = new Date(ed.getTime() + 3600 * 24 * 1000);
+        }
+        if (!StrUtils.isNull(startDate)) {
+            sd = simpleDateFormat.parse(startDate);
+        }
+
+        try {
+            url = plan1Service.doExport(sd, ed, ywyIds, type, bumen);
+        } catch (ServiceException e) {
+            return ResultGenerator.genFailResult(e.getMessage());
+        }
+        return ResultGenerator.genSuccessResult(url);
+    }
+
+
+    /**
+     * 文件下载接口
+     */
+    @RequestMapping("/download.do")
+    public void download(HttpServletResponse response, HttpServletRequest request) throws IOException {
+
+        String root = request.getServletContext().getRealPath("/");
+        String fileName = request.getParameter("fileName");
+
+        File file = new File( "E:/springboot/" + fileName);
+        FileInputStream fileInputStream = new FileInputStream(file);
+        fileName= fileName.substring(0,fileName.indexOf("VVV"));
+        byte[] bytes = IOUtils.toByteArray(fileInputStream);
+        response.reset();// 如果有换行，对于文本文件没有什么问题，但是对于其它格
+        // 式，比如AutoCAD、Word、Excel等文件下载下来的文件中就会多出一些换行符//0x0d和0x0a，这样可能导致某些格式的文件无法打开，有些也可以正常打开。同//时response.reset()这种方式也能清空缓冲区,
+        // 防止页面中的空行等输出到下载内容里去
+        if (request.getHeader("User-Agent").toLowerCase().indexOf("firefox") > 0)
+            fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");// firefox浏览器
+        else if (request.getHeader("User-Agent").toUpperCase().indexOf("MSIE") > 0)
+            fileName = URLEncoder.encode(fileName, "UTF-8");// IE浏览器
+        else {
+            fileName = URLEncoder.encode(fileName, "UTF-8");// 其他浏览器
+        }
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+        response.setHeader("Connection", "close");
+        IOUtils.write(bytes, response.getOutputStream());
+        fileInputStream.close();
+        file.delete();
     }
 
 

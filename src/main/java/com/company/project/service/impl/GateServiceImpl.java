@@ -35,6 +35,7 @@ public class GateServiceImpl extends AbstractService<Gate> implements GateServic
         Example.Criteria criteria = condition.createCriteria();
         if(map.containsKey("bumenId")) {
             criteria.andEqualTo("sorce",map.get("bumenId") );
+            criteria.andEqualTo("del",1 );
         }
         List<Gate> gates = gateMapper.selectByCondition(condition);
         return gates;

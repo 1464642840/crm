@@ -6,6 +6,7 @@ import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
 import com.company.project.core.ServiceException;
 import com.company.project.model.Tel;
+import com.company.project.service.GateService;
 import com.company.project.service.TelService;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
@@ -31,6 +32,8 @@ import java.util.*;
 public class TelController {
     @Resource
     private TelService telService;
+    @Resource
+    private GateService gateService;
 
     @PostMapping("/add")
     public Result add(Tel tel) {
@@ -92,7 +95,7 @@ public class TelController {
     }
 
     @PostMapping("/custList")
-    public Result custList(@RequestParam(defaultValue = "0") Long visitDate1, @RequestParam(defaultValue = "0") Long visitDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "") String custName, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
+    public Result custList(@RequestParam(defaultValue = "") String position, @RequestParam(defaultValue = "0") Long visitDate1, @RequestParam(defaultValue = "0") Long visitDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "") String custName, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -124,6 +127,19 @@ public class TelController {
         if (!StrUtils.isNull(businessType)) {
             map.put("businessType", businessType); //企业类型
         }
+        if (!StrUtils.isNull(position)) {
+            map.put("position", position); //职位
+        } else {
+            List<Map<Object, Object>> positionByName = gateService.getPositionByName(ywy);
+           try {
+               position = positionByName.get(0).get("position").toString();
+           }catch (Exception e){
+               position="普通员工";
+           }
+            map.put("position", position); //职位
+        }
+        map.put("size", size);
+        map.put("page", page);
         if (!StrUtils.isNull(keyword)) {
             map.put("keyword", keyword); //关键字
         }
@@ -137,11 +153,11 @@ public class TelController {
             map.put("lng", lng);
             map.put("lat", lat);
         }
-        PageHelper.startPage(page, size);
+
         List<Tel> list = telService.findByMyCondition(map);
         PageInfo pageInfo = new PageInfo(list);
 
-        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile", "businessType"};
+        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile", "businessType","isHisCustomer"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Tel.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);

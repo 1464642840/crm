@@ -3,10 +3,13 @@ package com.company.project.service.impl;
 import com.company.project.dao.ErpCustomvaluesMapper;
 import com.company.project.dao.TelMapper;
 import com.company.project.model.ErpCustomvalues;
+import com.company.project.model.Gate;
 import com.company.project.model.Tel;
+import com.company.project.service.GateService;
 import com.company.project.service.TelService;
 import com.company.project.core.AbstractService;
 import com.company.project.utils.string.StrUtils;
+import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -26,9 +29,34 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
     private TelMapper telMapper;
     @Resource
     private ErpCustomvaluesMapper erpCustomvaluesMapper;
+    @Resource
+    private GateService gateService;
 
     @Override
     public List<Tel> findByMyCondition(Map map) {
+
+
+        //用户对象
+        Gate by = gateService.findBy("username", map.get("ywy"));
+        map.put("username",by.getUsername());
+
+        String position = map.get("position").toString();
+
+
+        if (map.containsKey("position")) {
+            if ("部门长".equals(position) || "综合主管".equals(position)) {
+                //1.获得部门长所在的部门id
+
+                Integer sorce = by.getSorce();
+                map.put("sorce", sorce);
+                map.remove("ywy");
+            } else if ("总经理".equals(position) || "风控".equals(position)) {
+                String bumen=map.containsKey("部门")?map.get("bumen").toString():"";
+                map.remove("ywy");
+            }
+        }
+
+        PageHelper.startPage(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
         return telMapper.findByMyCondition(map);
     }
 

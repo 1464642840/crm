@@ -43,6 +43,7 @@
         <result column="selfTag" jdbcType="INTEGER" property="selfTag"/>
         <result column="companyName" jdbcType="VARCHAR" property="companyName"/>
         <result column="replyId" jdbcType="INTEGER" property="replyId"/>
+        <result column="isPeitong" jdbcType="INTEGER" property="isPeitong"/>
 
         <collection property="dianpingList" javaType="ArrayList" ofType="com.company.project.model.Dianping">
             <id property="id" column="id"></id>
@@ -63,14 +64,15 @@
     <select id="findByMyCondition" resultMap="BaseResultMap" parameterType="map">
         select
         pl.ord,
-        g.username username,
+        ry.name username,
         t.name companyName,
         pl.company,
         pl.intro,
         pl.tags,
         ry.id replyId,
-        (select count(*) from tags tag2 where tag2.plan1=pl.ord and tag2.person=g.username) selfTag,
+        (select count(*) from tags tag2 where tag2.plan1=pl.ord and tag2.person=#{username}) selfTag,
         pl.date7,
+        pl.isPeitong,
         pl.others others,
         dp.id dianping_id,
         dp.intro dianping_intro,
@@ -81,14 +83,22 @@
         tag.person tag_person
         from plan1 pl
         left join tags tag on tag.plan1=pl.ord
+
         left join gate g on pl.cateid=g.ord
+
         left join tel t on t.ord = pl.company
         left join reply ry on ry.plan1 = pl.ord
         left join dianping dp on dp.ord=ry.id
 
         where 1=1
         <if test="ywy != null">
-            and pl.cateid=(select ord from gate where username=#{ywy})
+            and pl.cateid=#{ywyId}
+        </if>
+        <if test="sorce != null">
+            and g.sorce=#{sorce}
+        </if>
+        <if test="sorce == null">
+            and g.sorce in(2,3)
         </if>
         <if test="company != null">
             and pl.company=#{company}
@@ -96,63 +106,127 @@
         <if test="createDate1!=null">
             and pl.date7>=#{createDate1}
         </if>
-        <if test="bumen != null">
-            and g.sorce = (select distinct g1.ord from gate1 g1 where g1.sort1 = #{bumen})
-        </if>
+
         <if test="createDate2!=null">
             and pl.date7&lt;=#{createDate2}
         </if>
 
         <if test="keyword!=null">
-            and(t.name like '%${keyword}%' or g.username like '%${keyword}%')
+            and(t.name like '%${keyword}%' or ry.name like '%${keyword}%')
         </if>
         order by pl.date7 desc,dp.date7 asc
 
     </select>
 
 
-    <select id="findByMyCondition_COUNT" resultType="Long" parameterType="map">
+    <select id="statistics" resultType="java.util.HashMap">
         select
-        count(*)
-
-        from plan1 pl
-        left join gate g on pl.cateid=g.ord
-        left join tel t on t.ord = pl.company
-        left join reply ry on ry.plan1 = pl.ord
-
-        where 1=1
-        <if test="company != null">
-            and pl.company=#{company}
+        (select count(pl.ord) from plan1 pl left join gate g on g.ord = pl.order1 where 1=1
+        <if
+                test="sorce!=null">and g.sorce=#{sorce}
         </if>
-        <if test="createDate1!=null">
-            and pl.date7>=#{createDate1}
+        <if
+                test="sorce==null">and g.sorce in(2,3)
         </if>
-        <if test="bumen != null">
-            and g.sorce = (select distinct g1.ord from gate1 g1 where g1.sort1 = #{bumen})
+        <if test="ywyId!=null">and pl.order1=#{ywyId}</if>
+        and
+        pl.date7>=#{year} ) year,
+        (select count(pl.ord) from plan1 pl left join gate g on g.ord = pl.order1 where 1=1
+        <if
+                test="sorce!=null">and g.sorce=#{sorce}
         </if>
-        <if test="createDate2!=null">
-            and pl.date7&lt;=#{createDate2}
+        <if
+                test="sorce==null">and g.sorce in(2,3)
         </if>
-
-        <if test="keyword!=null">
-            and(t.name like '%${keyword}%' or g.username like '%${keyword}%')
+        <if test="ywyId!=null">and pl.order1=#{ywyId}</if>
+        and
+        pl.date7>=#{month} ) month,
+        (select count(pl.ord) from plan1 pl left join gate g on g.ord = pl.order1 where 1=1
+        <if
+                test="sorce!=null">and g.sorce=#{sorce}
         </if>
-
+        <if
+                test="sorce==null">and g.sorce in(2,3)
+        </if>
+        <if test="ywyId!=null">and pl.order1=#{ywyId}</if>
+        and
+        pl.date7>=#{week} ) week,
+        (select count(pl.ord) from plan1 pl left join gate g on g.ord = pl.order1 where 1=1
+        <if
+                test="sorce!=null">and g.sorce=#{sorce}
+        </if>
+        <if
+                test="sorce==null">and g.sorce in(2,3)
+        </if>
+        <if test="ywyId!=null">and pl.order1=#{ywyId}</if>
+        and
+        pl.date7>=#{day} ) day,
+        (select count(pl.ord) from plan1 pl left join gate g on g.ord = pl.order1 where 1=1
+        <if
+                test="sorce!=null">and g.sorce=#{sorce}
+        </if>
+        <if
+                test="sorce==null">and g.sorce in(2,3)
+        </if>
+        <if test="ywyId!=null">and pl.order1=#{ywyId}</if>
+        and
+        pl.date7>=#{quarter} ) quarter
     </select>
 
 
-    <select id="statistics" resultType="java.util.HashMap">
+    <select id="selectDateExport" resultType="java.util.HashMap">
+
+
         select
-        (select count(pl.ord) from plan1 pl where 1=1  <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
-        pl.date7>=#{year} ) year,
-        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
-        pl.date7>=#{month} ) month,
-        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
-        pl.date7>=#{week} ) week,
-        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
-        pl.date7>=#{day} ) day,
-        (select count(pl.ord) from plan1 pl where 1=1    <if test="ywyId!=null">and pl.order1=#{ywyId}</if> and
-        pl.date7>=#{quarter} ) quarter
+        pl.cateid,
+        ry.name ywy,
+        pl.others,
+        pl.date7,
+        t.name companyName,
+        pl.intro intro,
+        g.sorce sorce,
+        (select FValue from ERP_CustomValues where FieldsID=17 and OrderID=t.ord) yzjyl,
+        (select FValue from ERP_CustomValues where FieldsID=16 and OrderID=t.ord) companyPersonNum,
+        (select FValue from ERP_CustomValues where FieldsID=34 and OrderID=t.ord) companyGuimo,
+        (select FValue from ERP_CustomValues where FieldsID=15 and OrderID=t.ord) isNew,
+        (select FValue from ERP_CustomValues where FieldsID=27 and OrderID=t.ord) leixing,
+        (select FValue from ERP_CustomValues where FieldsID=24 and OrderID=t.ord) wshz,
+
+        pl.address,
+        p.sex linkSex,
+        p.name linkName,
+        p.msn linkHobby,
+        p.mobile,
+        t.product shangyou,
+        t.c2 xiayou,
+        t.c3 qita,
+        p.job linkManJob
+        from plan1 pl
+        left join reply ry on ry.plan1 = pl.ord
+        left join tel t on t.ord=pl.company
+        left join person p on p.ord=pl.person
+        left join gate g on g.ord = pl.cateid
+        where pl.cateid = #{id} and pl.company in (
+        select  company  from plan1 pl2
+        where
+        pl2.cateid = #{id}
+        <if test="startDate!=null">
+            and pl2.date7 >= #{startDate}
+        </if>
+        <if test="endDate!=null">
+            and pl2.date7 &lt;= #{endDate}
+        </if>
+
+        )
+        <if test="closeThree!=null">
+            and pl.date7 >= #{closeThree}
+        </if>
+        order by pl.date7 desc
+
+
+
+
+
     </select>
 
 

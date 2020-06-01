@@ -140,7 +140,7 @@
 
 
     <select id="findByMyCondition" resultMap="BaseResultMap" parameterType="map">
-        select DISTINCT
+        select
         <if test="order.equals('distance')">
             ROUND(
             6378.138 * 2 * ASIN(
@@ -175,27 +175,40 @@
         t.address,
         t.person,
         p.name person_name,
-        p.mobile
+        p.mobile,
+        (CASE
+        WHEN g.username=#{username}
+        THEN 1
+        ELSE 0
+        END ) isHisCustomer
+
         FROM
         tel t
         LEFT JOIN person p
         ON t.person = p.ord
+        LEFT JOIN gate g
+        ON g.ord =t.cateid
+
+
         <if test="visitDate1!=null||visitDate2!=null">
             left join plan1 pl
-            on t.ord=pl.company and pl.cateid=(SELECT
-            top 1
-            g.ord
-            FROM
-            gate g
-            WHERE g.username = #{ywy})
+            on pl.ord = t.ord
         </if>
         WHERE t.del = 1
         <if test="visitDate1!=null">
-            and pl.date8>=#{visitDate1}
+            and pl.date7>=#{visitDate1}
         </if>
         <if test="visitDate2!=null">
-            and pl.date8&lt;=#{visitDate2}
+            and pl.date7&lt;=#{visitDate2}
         </if>
+        <if test="ywy!=null">
+            and g.username = #{ywy}
+        </if>
+
+        <if test="sorce!=null">
+            and g.sorce=#{sorce}
+        </if>
+
         <if test="custName!=null">
             and t.name&lt;=#{custName}
         </if>
@@ -216,74 +229,16 @@
             and t.date1&lt;=#{createDate2}
         </if>
 
-        AND t.cateid =
-        (SELECT
-        top 1
-        g.ord
-        FROM
-        gate g
-        WHERE g.username = #{ywy})
+
         <if test="order.equals('name')">
             order by t.pym ,t.name
         </if>
         <if test="order.equals('distance')">
-            order by juli,t.pym ,t.name
+            order by juli,t.name
         </if>
     </select>
 
 
-    <select id="findByMyCondition_COUNT_" resultType="Long">
-        select count(DISTINCT
-
-        t.ord )
-        FROM
-        tel t
-        LEFT JOIN person p
-        ON t.person = p.ord
-        <if test="visitDate1!=null||visitDate2!=null">
-            left join plan1 pl
-            on t.ord=pl.company and pl.cateid=(SELECT
-            top 1
-            g.ord
-            FROM
-            gate g
-            WHERE g.username = #{ywy})
-        </if>
-        WHERE t.del = 1
-        AND t.name IS NOT NULL
-        AND (p.del = 1 or p.del is null)
-        <if test="visitDate1!=null">
-            and pl.date8>=#{visitDate1}
-        </if>
-        <if test="visitDate2!=null">
-            and pl.date8&lt;=#{visitDate2}
-        </if>
-        <if test="custName!=null">
-            and t.name&lt;=#{custName}
-        </if>
-        <if test="keyword!=null">
-            and t.name like'%${keyword}%'
-        </if>
-        <if test="businessType!=null">
-            and #{businessType}=(select ev.FValue
-            from erp_customvalues ev
-            where ev.FieldsID=27 and OrderID=t.ord)
-        </if>
-        <if test="createDate1!=null">
-            and t.date1>=#{createDate1}
-        </if>
-        <if test="createDate2!=null">
-            and t.date1&lt;=#{createDate2}
-        </if>
-
-        AND t.cateid =
-        (SELECT
-        top 1
-        g.ord
-        FROM
-        gate g
-        WHERE g.username = #{ywy})
-    </select>
     <select id="selectExistExtendFields" resultType="java.lang.String">
         select e.FieldsID
         from ERP_CustomValues e
@@ -304,7 +259,6 @@
 
 
     </insert>
-
 
 
 </mapper>

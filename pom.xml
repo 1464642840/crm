@@ -159,6 +159,27 @@
             <systemPath>${project.basedir}/src/main/resources/lib/Spire.Xls.jar</systemPath>
         </dependency>
 
+        <dependency>
+            <groupId>aspose-cells</groupId>
+            <artifactId>aspose-cells</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/lib/aspose-cells-8.5.2.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>pdfbox-app</groupId>
+            <artifactId>pdfbox-app</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/lib/pdfbox-app-1.7.1.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
 
 
     </dependencies>

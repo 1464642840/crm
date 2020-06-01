@@ -164,15 +164,19 @@ public class SysnTest {
                     String stringCellValue = cell.getValue();
 
                     try {
+
+
                         if (lastName.startsWith("后续合作推进计划")) {
                             baifang.put("plan", stringCellValue);
-                            if(baifang.containsKey("date")){
+                            if (baifang.containsKey("date")) {
                                 Object clone = baifang.clone();
 
                                 baiFangArr.add(clone);
-                                baifang =new JSONObject();
+                                baifang = new JSONObject();
                             }
                         }
+
+
                         if (StrUtils.isNull(stringCellValue.trim())) {
                             continue;
                         }
@@ -185,9 +189,7 @@ public class SysnTest {
                     }
 
 
-
-
-                    if ((k > 15 && j == dateRow && stringCellValue.startsWith("20"))||lastName.startsWith("拜访总结")) {
+                    if ((k > 15 && j == dateRow && stringCellValue.startsWith("20")) || lastName.startsWith("拜访总结")) {
 
 
                         //2019/10/9（韩非，朱文健陪同）
@@ -225,13 +227,7 @@ public class SysnTest {
                                 }
                             }
                         }
-                    }
-
-
-                    if (lastName.startsWith("其他信息获取")) {
-                        baifang.put("happen", stringCellValue);
-                    }
-                     else if (lastName.startsWith("企业主要上游供应商")) {
+                    } else if (lastName.startsWith("企业主要上游供应商")) {
 
                         JSONArray product = new JSONArray();
 
@@ -339,10 +335,12 @@ public class SysnTest {
 
 
                     }
+                    if (lastName.startsWith("其他信息获取")) {
+                        baifang.put("happen", stringCellValue);
+                    }
+
 
                     switch (lastName.trim()) {
-
-
 
 
                         case "拜访目的":
@@ -371,6 +369,7 @@ public class SysnTest {
                             res.put("@danh_24", stringCellValue);
                             break;
                         case "企业月销售量（吨）":
+                        case "月平均原料用量（吨）":
                             res.put("@danh_17", stringCellValue);
                             break;
 
@@ -507,7 +506,7 @@ public class SysnTest {
                                     case "手机号码：":
                                     case "联系方式：":
                                         try {
-                                            obj.put("mobile", split[++i]);
+                                            obj.put("mobile", split[++i].contains("手机")?"":split[i]);
                                         } catch (Exception e) {
 
                                         }
@@ -530,7 +529,7 @@ public class SysnTest {
                                                     break;
                                                 case "手机号码":
                                                 case "联系方式":
-                                                    obj.put("mobile", split1[1]);
+                                                    obj.put("mobile", split1[1].contains("手机")?"":split1[1]);
                                                     break;
                                             }
 
@@ -584,7 +583,7 @@ public class SysnTest {
             try {
                 JSONObject obj = arr.getJSONObject(j);
 
-                if(!obj.containsKey("name")){
+                if (!obj.containsKey("name")) {
                     continue;
                 }
                 final String name = obj.getString("name");
