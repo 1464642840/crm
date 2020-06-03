@@ -16,4 +16,5 @@ public interface Plan1Mapper extends Mapper<Plan1> {
 
     List<HashMap<String, Object>> selectDateExport(@Param("id") Integer id, @Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("closeThree") Date date);
 
+    List<Map<Object, Object>> getGroupByYwy(@Param("date") Date date);
 }

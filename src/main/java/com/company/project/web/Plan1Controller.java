@@ -184,7 +184,7 @@ public class Plan1Controller {
         Date day = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
 
         //获取当前季度
-        Date quarter = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(DateUtils.getQuarterFirst()));
+        Date quarter = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(DateUtils.getCurrQuarter()));
         //将日期存入map集合中
 
         map.put("year", year);

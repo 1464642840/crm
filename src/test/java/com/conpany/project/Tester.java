@@ -106,7 +106,11 @@ public class Tester {
 
     @Test
     public  void testExport(){
-        //plan1Service.doExport(null,null,null,null,"");
+        try {
+            statisticsService.getYwyVisitTodayStatistics();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
 

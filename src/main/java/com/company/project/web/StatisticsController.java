@@ -27,10 +27,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -87,6 +84,16 @@ public class StatisticsController {
         Date eD = new Date(endDate + 3600 * 24 * 1000);
         JSONObject obj = statisticsService.getcustomerVisitStatistics(type, sD, eD);
         return ResultGenerator.genSuccessResult(obj);
+
+    }
+
+    /**
+     * 导出拜访数量汇总表
+     * */
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @RequestMapping("/doExportBaiFang")
+    public Result doExport() throws ParseException {
+        return ResultGenerator.genSuccessResult(statisticsService.getYwyVisitTodayStatistics());
 
     }
 

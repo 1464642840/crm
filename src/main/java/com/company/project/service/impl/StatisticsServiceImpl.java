@@ -1,21 +1,26 @@
 package com.company.project.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.company.project.dao.GateMapper;
+import com.company.project.dao.Plan1Mapper;
 import com.company.project.dao.ReplyMapper;
-import com.company.project.model.Reply;
 import com.company.project.service.StatisticsService;
-import com.company.project.utils.date.DateUtils;
 import com.company.project.utils.erp.ErpDataUtils;
 import com.company.project.utils.erp.StatisticsUtils;
 import com.company.project.utils.string.NumberUtils;
-import com.company.project.utils.string.StrUtils;
+import com.spire.xls.CellRange;
+import com.spire.xls.Workbook;
+import com.spire.xls.Worksheet;
+import com.spire.xls.collections.WorksheetsCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -26,6 +31,12 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Autowired
     private ReplyMapper replyMapper;
+
+    @Autowired
+    private Plan1Mapper plan1Mapper;
+
+    @Autowired
+    private GateMapper gateMapper;
 
     @Override
     public JSONObject getSaleManDataStatistics(String type, Date startDate, Date endDate) throws ParseException {
@@ -62,7 +73,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (int i = 0; i < dateByParam.size(); i++) {
             JSONArray jsonArray = dateByParam.getJSONArray(i);
             String ywy = jsonArray.getString(0);
-            Double sl = jsonArray.getDouble(1)/1000;
+            Double sl = jsonArray.getDouble(1) / 1000;
             JSONObject ywyObj = res.containsKey(ywy) ? res.getJSONObject(ywy) : new JSONObject();
             ywyObj.put(SALECOUNKEY, NumberUtils.add(sl, ywyObj.containsKey(SALECOUNKEY) ? ywyObj.getDouble(SALECOUNKEY) : 0));
             res.put(ywy, ywyObj);
@@ -296,11 +307,279 @@ public class StatisticsServiceImpl implements StatisticsService {
         return res_obj;
 
 
+    }
+
+    @Override
+    public String getYwyVisitTodayStatistics() throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        //获得本年的第一天
+        Date year = sdf.parse(new SimpleDateFormat("yyyy").format(new Date()) + "-01-01");
+        //获取本月的第一天
+        Date month = sdf.parse(new SimpleDateFormat("yyyy-MM").format(new Date()) + "-01");
+        List<Map<Object, Object>> yearData = plan1Mapper.getGroupByYwy(year);
+        List<Map<Object, Object>> monthData = plan1Mapper.getGroupByYwy(month);
+        List<Map<Object, Object>> todayData = plan1Mapper.getGroupByYwy(sdf.parse(sdf.format(new Date())));
+
+        //1.获取所有业务员
+
+        List<Map<Object, Object>> ywyList = gateMapper.selectSlGandGcywy();
+
+        JSONObject res = new JSONObject();
+        for (Map<Object, Object> objectObjectMap : ywyList) {
+            Object username = objectObjectMap.get("username");
+            Object sorce = objectObjectMap.get("sorce");
+            JSONObject obj = new JSONObject();
+            obj.put("sorce", sorce);
+            res.put(username.toString(), obj);
+        }
+
+        for (Map<Object, Object> yearDatum : yearData) {
+            String name = yearDatum.get("name").toString();
+            String isNew = yearDatum.get("isNew").toString();
+            Object sl = yearDatum.get("sl");
+            JSONObject ywyObj = null;
+            if (!res.containsKey(name)) {
+                continue;
+            }
+            ywyObj = res.getJSONObject(name);
+            JSONObject yearObj = ywyObj.containsKey("year") ? ywyObj.getJSONObject("year") : new JSONObject();
+            yearObj.put(isNew, sl);
+            ywyObj.put("year", yearObj);
+            res.put(name, ywyObj);
+        }
+        for (Map<Object, Object> yearDatum : monthData) {
+            String name = yearDatum.get("name").toString();
+            String isNew = yearDatum.get("isNew").toString();
+            Object sl = yearDatum.get("sl");
+            JSONObject ywyObj = null;
+            if (!res.containsKey(name)) {
+                continue;
+            }
+            ywyObj = res.getJSONObject(name);
+            JSONObject yearObj = ywyObj.containsKey("month") ? ywyObj.getJSONObject("month") : new JSONObject();
+            yearObj.put(isNew, sl);
+            ywyObj.put("month", yearObj);
+            res.put(name, ywyObj);
+        }
+        for (Map<Object, Object> yearDatum : todayData) {
+            String name = yearDatum.get("name").toString();
+            String isNew = yearDatum.get("isNew").toString();
+            Object sl = yearDatum.get("sl");
+            JSONObject ywyObj = null;
+            if (!res.containsKey(name)) {
+                continue;
+            }
+            ywyObj = res.getJSONObject(name);
+            JSONObject yearObj = ywyObj.containsKey("today") ? ywyObj.getJSONObject("today") : new JSONObject();
+            yearObj.put(isNew, sl);
+            ywyObj.put("today", yearObj);
+            res.put(name, ywyObj);
+        }
+        //排序
+        List<String> ywyNameList = new ArrayList<>();
+        ywyNameList.addAll(res.keySet());
+        System.out.println(ywyNameList);
+        Collections.sort(ywyNameList, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                JSONObject o1Obj = res.getJSONObject(o1);
+                JSONObject o2Obj = res.getJSONObject(o2);
+                if (!o1Obj.getString("sorce").equals(o2Obj.getString("sorce"))) {
+                    return o2Obj.getString("sorce").compareTo(o1Obj.getString("sorce"));
+                } else {
+                    if ("沙金宝".equals(o1)) {
+                        return -1;
+                    } else if ("沙金宝".equals(o2)) {
+                        return 1;
+                    }
+                    if ("李宾".equals(o1)) {
+                        return -1;
+                    } else if ("李宾".equals(o2)) {
+                        return 1;
+                    }
+                    if ("干娜".equals(o1)) {
+                        return -1;
+                    } else if ("干娜".equals(o2)) {
+                        return 1;
+                    }
+                    if ("陈黎明".equals(o1)) {
+                        return -1;
+                    } else if ("陈黎明".equals(o2)) {
+                        return 1;
+                    }
+
+
+                    JSONObject mon1 = o1Obj.containsKey("month") ? o1Obj.getJSONObject("month") : new JSONObject();
+                    JSONObject mon2 = o2Obj.containsKey("month") ? o2Obj.getJSONObject("month") : new JSONObject();
+                    int s1 = (mon1.containsKey("1") ? mon1.getIntValue("1") : 0) + (mon1.containsKey("0") ? mon1.getIntValue("0") : 0);
+                    int s2 = (mon2.containsKey("1") ? mon2.getIntValue("1") : 0) + (mon2.containsKey("0") ? mon2.getIntValue("0") : 0);
+
+                    return s2 - s1;
+
+
+                }
+            }
+        });
+
+        //绘制excel表格
+        return   drawBaiFangExce(res, ywyNameList);
+
+
 
     }
 
-    public static void main(String[] args) {
-        //  JSONObject slCustomerStatusDate = StatisticsUtils.getSlCustomerStatusDate();
-        //  System.out.println(slCustomerStatusDate);
+    private String drawBaiFangExce(JSONObject res, List<String> ywyNameList) {
+
+        File directory = new File("src/main/resources");
+        String reportPath = null;
+        try {
+            reportPath = directory.getCanonicalPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        File f = new File(reportPath + "/file/合肥圆融2020年xx月客户拜访记录总表.xlsx");
+        Workbook workbook = new Workbook();
+        try {
+            workbook.loadFromStream(new FileInputStream(f));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        WorksheetsCollection worksheets = workbook.getWorksheets();
+        Worksheet sheet = worksheets.get(0);
+        //大标题
+        CellRange cellRange = sheet.getCellRange(1, 2);
+        cellRange.setText("合肥圆融客户拜访" + new SimpleDateFormat("yyyy年M月").format(new Date()) + "统计");
+
+        //当天拜访标题
+        sheet.getCellRange(2, 5).setText(new SimpleDateFormat("M月d日").format(new Date()) + "拜访数据");
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        int mon = c.get(Calendar.MONTH) + 1;
+        int ye = c.get(Calendar.YEAR);
+
+        //当月拜访标题
+        sheet.getCellRange(2, 8).setText(mon + "月累计拜访数据");
+        //当年拜访标题
+        sheet.getCellRange(2, 11).setText(ye + "年累计拜访数据");
+
+
+        int gannaIndex = ywyNameList.indexOf("干娜");
+
+
+        int startLine = 4;
+        for (int i = 0; i < gannaIndex; i++) {
+            String s = ywyNameList.get(i);
+            JSONObject jsonObject = res.getJSONObject(s);
+            JSONObject today = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
+            JSONObject month = jsonObject.containsKey("month") ? jsonObject.getJSONObject("month") : new JSONObject();
+            JSONObject year = jsonObject.containsKey("year") ? jsonObject.getJSONObject("year") : new JSONObject();
+            //姓名
+            sheet.getCellRange(startLine, 4).setText(s);
+            //当天老客户
+            sheet.getCellRange(startLine, 5).setNumberValue(today.containsKey("0") ? today.getIntValue("0") : 0);
+            //当天新客户
+            sheet.getCellRange(startLine, 6).setNumberValue(today.containsKey("1") ? today.getIntValue("1") : 0);
+            //当天合计
+            sheet.getCellRange(startLine, 7).setFormula("=SUM(E" + startLine + ":F" + startLine + ")");
+
+            //当月老客户
+            sheet.getCellRange(startLine, 8).setNumberValue(month.containsKey("0") ? month.getIntValue("0") : 0);
+            //当月新客户
+            sheet.getCellRange(startLine, 9).setNumberValue(month.containsKey("1") ? month.getIntValue("1") : 0);
+            //当月合计
+            sheet.getCellRange(startLine, 10).setFormula("=SUM(H" + startLine + ":I" + startLine + ")");
+
+            //当年老客户
+            sheet.getCellRange(startLine, 11).setNumberValue(year.containsKey("0") ? year.getIntValue("0") : 0);
+            //当年新客户
+            sheet.getCellRange(startLine, 12).setNumberValue(year.containsKey("1") ? year.getIntValue("1") : 0);
+            //当年合计
+            sheet.getCellRange(startLine, 13).setFormula("=SUM(K" + startLine + ":L" + startLine + ")");
+
+
+            startLine++;
+            if (i != gannaIndex - 1) {
+                sheet.insertRow(startLine);
+                sheet.copy(sheet.getCellRange(startLine - 1, 1, startLine - 1, 17), sheet.getCellRange(startLine, 1, startLine, 17), true);
+            }
+
+        }
+
+
+        sheet.getCellRange(4, 2, startLine - 1, 2).merge();
+
+
+        //算出钢材部合计
+        for (int i = 5; i <= 13; i++) {
+            char cc = (char) ('A' + i - 1);
+            sheet.getCellRange(startLine, i).setFormula("=SUM(" + cc + "" + 4 + ":" + cc + "" + (4 + gannaIndex - 1) + ")");
+        }
+
+        startLine++;
+
+        //塑料
+        for (int i = gannaIndex; i < ywyNameList.size(); i++) {
+            String s = ywyNameList.get(i);
+            JSONObject jsonObject = res.getJSONObject(s);
+            JSONObject today = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
+            JSONObject month = jsonObject.containsKey("month") ? jsonObject.getJSONObject("month") : new JSONObject();
+            JSONObject year = jsonObject.containsKey("year") ? jsonObject.getJSONObject("year") : new JSONObject();
+            //姓名
+            sheet.getCellRange(startLine, 4).setText(s);
+            //当天老客户
+            sheet.getCellRange(startLine, 5).setNumberValue(today.containsKey("0") ? today.getIntValue("0") : 0);
+            //当天新客户
+            sheet.getCellRange(startLine, 6).setNumberValue(today.containsKey("1") ? today.getIntValue("1") : 0);
+            //当天合计
+            sheet.getCellRange(startLine, 7).setFormula("=SUM(E" + startLine + ":F" + startLine + ")");
+
+            //当月老客户
+            sheet.getCellRange(startLine, 8).setNumberValue(month.containsKey("0") ? month.getIntValue("0") : 0);
+            //当月新客户
+            sheet.getCellRange(startLine, 9).setNumberValue(month.containsKey("1") ? month.getIntValue("1") : 0);
+            //当月合计
+            sheet.getCellRange(startLine, 10).setFormula("=SUM(H" + startLine + ":I" + startLine + ")");
+
+            //当年老客户
+            sheet.getCellRange(startLine, 11).setNumberValue(year.containsKey("0") ? year.getIntValue("0") : 0);
+            //当年新客户
+            sheet.getCellRange(startLine, 12).setNumberValue(year.containsKey("1") ? year.getIntValue("1") : 0);
+            //当年合计
+            sheet.getCellRange(startLine, 13).setFormula("=SUM(K" + startLine + ":L" + startLine + ")");
+
+
+            startLine++;
+            if (i != ywyNameList.size() - 1) {
+                sheet.insertRow(startLine);
+                sheet.copy(sheet.getCellRange(startLine - 1, 1, startLine - 1, 17), sheet.getCellRange(startLine, 1, startLine, 17), true);
+            }
+
+        }
+
+
+        //算出塑料部合计
+        for (int i = 5; i <= 13; i++) {
+            char cc = (char) ('A' + i - 1);
+            sheet.getCellRange(startLine, i).setFormula("=SUM(" + cc + "" + (gannaIndex + 4 + 1) + ":" + cc + "" + (startLine - 1) + ")");
+        }
+
+        sheet.getCellRange(gannaIndex + 4 + 1, 2, startLine - 1, 2).merge();
+
+        startLine++;
+
+        //算出公司合计
+        for (int i = 5; i <= 13; i++) {
+            char cc = (char) ('A' + i - 1);
+            sheet.getCellRange(startLine, i).setFormula("=" + cc + "" + (gannaIndex + 4) + "+" + cc + "" + (startLine - 1));
+        }
+
+
+        workbook.calculateAllValue();
+        String fileName = "合肥圆融2020年" + mon + "月客户拜访记录总表.xlsx" + "VVV" + UUID.randomUUID().toString();
+        workbook.saveToFile("E:/springboot/" + fileName);
+        return fileName;
     }
+
+
 }

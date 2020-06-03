@@ -15,6 +15,7 @@ import com.company.project.service.Plan1Service;
 import com.company.project.core.AbstractService;
 import com.company.project.utils.erp.StatisticsUtils;
 import com.company.project.utils.poi.Excel2PDF;
+import com.company.project.utils.poi.PDFUtils;
 import com.company.project.utils.string.StrUtils;
 import com.company.project.utils.zip.ZipUtils;
 import com.github.pagehelper.PageHelper;
@@ -169,13 +170,15 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
 
         plan1.setOption1(0);
         JSONArray arr = new JSONArray();
-        arr.add(name + ":" + plan1.getIntro());
-        plan1.setIntro2(arr.toJSONString());
+        JSONObject o = new JSONObject();
+        o.put(name, plan1.getIntro());
+        arr.add(o);
+        plan1.setIntro2(arr.toString());
         //去匹配有没有关联拜访的
         //1.主拜访人员
         try {
             Integer compnayId = plan1.getCompany();
-            if (plan1.getIsPeitong() == 1) {
+            if (plan1.getIsPeitong() == 1 && !StrUtils.isNull(plan1.getOthers())) {
 
                 //根据公司id和最近三天查询有没有陪同
                 Condition c = new Condition(Plan1.class);
@@ -190,9 +193,11 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                     for (Plan1 plan11 : plan1s) {
                         String intro = plan11.getIntro();
                         Gate byId = gateService.findById(plan11.getCateid());
-                        array.add(byId.getUsername() + ":" + intro);
+                        JSONObject o1 = new JSONObject();
+                        o1.put(byId.getUsername(), intro);
+                        array.add(o1);
                     }
-                    plan1.setIntro2(array.toJSONString());
+                    plan1.setIntro2(array.toString());
 
                 }
                 //陪同人员
@@ -205,12 +210,17 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                 criteria.andEqualTo("isPeitong", 1);
                 List<Plan1> plan1s = plan1Mapper.selectByCondition(c);
                 if (!CollectionUtils.isEmpty(plan1s)) {
+
                     Plan1 plan11 = plan1s.get(0);
-                    String intro2 = plan11.getIntro2();
-                    JSONArray array1 = JSONArray.parseArray(intro2);
-                    array1.add(plan1.getIntro2());
-                    plan11.setIntro2(array1.toJSONString());
-                    plan1Mapper.updateByPrimaryKeySelective(plan11);
+                    if (plan11.getOthers().contains(name)) {
+                        String intro2 = plan11.getIntro2();
+                        JSONArray array1 = JSONArray.parseArray(intro2);
+                        JSONObject object = new JSONObject();
+                        object.put(name, plan1.getIntro());
+                        array1.add(object);
+                        plan11.setIntro2(array1.toString());
+                        plan1Mapper.updateByPrimaryKeySelective(plan11);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -267,8 +277,8 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
         //当前登录的用户id
 
         Integer cateId = plan1.getCateid();
-        Plan1 plan11 = plan1Mapper.selectByPrimaryKey(plan1.getOrd());
-        if (cateId != plan11.getCateid()) {
+        Plan1 plan112 = plan1Mapper.selectByPrimaryKey(plan1.getOrd());
+        if (cateId.intValue() != plan112.getCateid().intValue()) {
             throw new ServiceException("非本人不能修改记录!");
         }
 
@@ -295,7 +305,83 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
         plan1.setComplete(1 + "");
         plan1.setCateid3(3);
         plan1.setComplete("2");
-        plan1.setIntro2(plan1.getIntro());
+
+        Date baiFangDate = new Date(nowDate);
+
+        JSONArray arr = new JSONArray();
+        JSONObject o = new JSONObject();
+        o.put(name, plan1.getIntro());
+        arr.add(o);
+        plan1.setIntro2(arr.toString());
+        //去匹配有没有关联拜访的
+        //1.主拜访人员
+        try {
+            Integer compnayId = plan1.getCompany();
+            if (plan1.getIsPeitong() == 1 && !StrUtils.isNull(plan1.getOthers())) {
+
+                //根据公司id和最近三天查询有没有陪同
+                Condition c = new Condition(Plan1.class);
+                Example.Criteria criteria = c.createCriteria();
+                criteria.andEqualTo("company", compnayId);
+                criteria.andLessThan("date7", new Date(baiFangDate.getTime() + 3600 * 24 * 1000 * 2));
+                criteria.andGreaterThan("date7", new Date(baiFangDate.getTime() - 3600 * 24 * 1000 * 2));
+                criteria.andEqualTo("isPeitong", 0);
+                List<Plan1> plan1s = plan1Mapper.selectByCondition(c);
+                if (!CollectionUtils.isEmpty(plan1s)) {
+                    JSONArray array = JSONArray.parseArray(plan1.getIntro2());
+                    for (Plan1 plan11 : plan1s) {
+                        String intro = plan11.getIntro();
+                        Gate byId = gateService.findById(plan11.getCateid());
+                        JSONObject o1 = new JSONObject();
+                        o1.put(byId.getUsername(), intro);
+                        array.add(o1);
+                    }
+                    plan1.setIntro2(array.toString());
+
+                }
+                //陪同人员
+            } else if (plan1.getIsPeitong() == 0) {
+                Condition c = new Condition(Plan1.class);
+                Example.Criteria criteria = c.createCriteria();
+                criteria.andEqualTo("company", compnayId);
+                criteria.andLessThan("date7", new Date(baiFangDate.getTime() + 3600 * 24 * 1000 * 2));
+                criteria.andGreaterThan("date7", new Date(baiFangDate.getTime() - 3600 * 24 * 1000 * 2));
+                criteria.andEqualTo("isPeitong", 1);
+                List<Plan1> plan1s = plan1Mapper.selectByCondition(c);
+                if (!CollectionUtils.isEmpty(plan1s)) {
+
+                    Plan1 plan11 = plan1s.get(0);
+                    if (plan11.getOthers().contains(name)) {
+
+                        String intro2 = plan11.getIntro2();
+
+                        JSONArray array = JSONArray.parseArray(intro2);
+                        JSONObject x = new JSONObject();
+                        x.put(name, plan1.getIntro());
+                        Boolean isOk = false;
+                        for (int i = 0; i < array.size(); i++) {
+                            JSONObject jsonObject = array.getJSONObject(i);
+                            if (jsonObject.keySet().contains(name)) {
+                                array.set(i, x);
+                                isOk = true;
+                                break;
+                            }
+                        }
+                        if (!isOk) {
+                            array.add(x);
+                        }
+
+                        plan11.setIntro2(array.toString());
+                        plan1Mapper.updateByPrimaryKeySelective(plan11);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("关联陪同人员失败");
+            e.printStackTrace();
+        }
+
+
         plan1.setOption1(0);
         try {
             plan1.setDate4(sdf.parse(sdf.format(date)));
@@ -367,6 +453,8 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                         String date7 = datum.get("date7").toString().substring(0, 10);
                         String companyName = datum.get("companyName").toString();
                         String intro = datum.get("intro").toString();
+                        String intro2 = datum.get("intro2").toString();
+                        String others =datum.containsKey("others")? datum.get("others").toString():"";
                         if (!hashSet.add(intro + companyName + date7)) {
                             continue;
                         }
@@ -376,6 +464,8 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                         JSONArray baifangArr = companyObj.containsKey("baifang") ? companyObj.getJSONArray("baifang") : new JSONArray();
                         JSONObject object = JSONObject.parseObject(intro);
                         object.put("date", date7);
+                        object.put("intro2", intro2);
+                        object.put("others", others);
                         baifangArr.add(object);
                         companyObj.put("baifang", baifangArr);
                         ywyObj.put(companyName, companyObj);
@@ -435,6 +525,11 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
             }
             try {
                 mergePdf.mergeDocuments();
+                PDFUtils.addPageNum(path + "/" + zipFileName,path + "/" + zipFileName+"_1");
+
+                new File(path + "/" + zipFileName).delete();
+                zipFileName+="_1";
+
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (COSVisitorException e) {
@@ -491,6 +586,7 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
 
                 //设置拜访人姓名
                 emptySheet.getCellRange(2, 3).setText(info.get("ywy").toString());
+
                 //所在部门
                 if (info.get("sorce").toString().equals("2")) {
                     emptySheet.getCellRange(2, 6).setText("塑料部");
@@ -525,14 +621,14 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                     cellRange1.setText("□是            ■否");
                 }
                 //企业人数
-                emptySheet.getCellRange(8, 3).setText(info.get("companyPersonNum") + "");
+                emptySheet.getCellRange(8, 3).setText(StrUtils.isNull(info.get("companyPersonNum") + "")?"":info.get("companyPersonNum") + "");
                 //企业规模
-                emptySheet.getCellRange(8, 6).setText(info.get("companyGuimo") + "");
+                emptySheet.getCellRange(8, 6).setText(StrUtils.isNull(info.get("companyGuimo") + "")?"":info.get("companyGuimo") + "");
                 //联系人信息
                 emptySheet.getCellRange(9, 3).setText("姓名：" + (StrUtils.isNull(info.get("linkName") + "") ? "" : info.get("linkName")) + "          性别：" + (StrUtils.isNull(info.get("linkSex") + "") ? "" : info.get("linkSex")) +
                         "      部门及职位： " + (StrUtils.isNull(info.get("linkManJob") + "") ? "" : info.get("linkManJob")) + "     手机号码：" + (StrUtils.isNull(info.get("mobile") + "") ? "" : info.get("mobile")));
                 //爱好
-                emptySheet.getCellRange(10, 3).setText("爱好及其他信息： " + info.get("linkHobby"));
+                emptySheet.getCellRange(10, 3).setText("爱好及其他信息： " + (StrUtils.isNull(info.get("linkHobby") + "") ? "" : info.get("linkHobby")));
                 //月平均原料用量（吨）
                 emptySheet.getCellRange(11, 3).setText(StrUtils.isNull(info.get("yzjyl") + "") ? "" : info.get("yzjyl") + "");
                 //我司月平均合作数量（吨）
@@ -597,44 +693,100 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
 
                     JSONObject jsonObject = arr.getJSONObject(i);
                     String date = jsonObject.getString("date");
-                    String result = jsonObject.containsKey("result") ? jsonObject.getString("result") : "";
-                    String plan = jsonObject.containsKey("plan") ? jsonObject.getString("plan") : "";
-                    String target = jsonObject.containsKey("target") ? jsonObject.getString("target") : "";
-                    String happen = jsonObject.containsKey("happen") ? jsonObject.getString("happen") : "";
-                    String others = info.get("others") + "";
 
 
-                    if (!StrUtils.isNull(others)) {
-                        emptySheet.getCellRange(23 + (4 * i), 2).setText(date + "（陪同人：" + others + "）");
-                    } else {
-                        emptySheet.getCellRange(23 + (4 * i), 2).setText(date);
+                    try {
+                        JSONArray intro2 = JSONArray.parseArray(jsonObject.get("intro2").toString());
+                        String ywyS = intro2.size() > 1 ? ywy + ":" : "";
+
+                        String result = jsonObject.containsKey("result") ? ywyS + jsonObject.getString("result") : "";
+                        String plan = jsonObject.containsKey("plan") ? ywyS + jsonObject.getString("plan") : "";
+                        String target = jsonObject.containsKey("target") ? ywyS + jsonObject.getString("target") : "";
+                        String happen = jsonObject.containsKey("happen") ? ywyS + jsonObject.getString("happen") : "";
+                        String others = jsonObject.get("others") + "";
+                        for (int j = 1; j < intro2.size(); j++) {
+                            JSONObject jsonObject1 = intro2.getJSONObject(j);
+                            String peiTongName = jsonObject1.keySet().iterator().next();
+                            JSONObject jsonObject2 = jsonObject1.getJSONObject(peiTongName);
+
+                            result += ((jsonObject2.containsKey("result") ? "\r\n" + peiTongName + "(陪同):" + jsonObject2.getString("result") : ""));
+                            plan += ((jsonObject2.containsKey("plan") ? "\r\n" + peiTongName + "(陪同):" + jsonObject2.getString("plan") : ""));
+                            target += ((jsonObject2.containsKey("target") ? "\r\n" + peiTongName + "(陪同):" + jsonObject2.getString("target") : ""));
+                            happen += ((jsonObject2.containsKey("happen") ? "\r\n" + peiTongName + "(陪同):" + jsonObject2.getString("happen") : ""));
+
+                        }
+
+
+                        if (!StrUtils.isNull(others)) {
+                            emptySheet.getCellRange(23 + (4 * i), 2).setText(date + "（陪同人：" + others + "）");
+                        } else {
+                            emptySheet.getCellRange(23 + (4 * i), 2).setText(date);
+                        }
+
+
+                        CellRange rangTarger = emptySheet.getCellRange(23 + (4 * i), 5);
+                        rangTarger.setText(target);
+                        tempRange.setText(target);
+                        tempRange.autoFitRows();
+                        rangTarger.setRowHeight(tempRange.getRowHeight() * intro2.size() / 2.5 > 30 ? tempRange.getRowHeight() * intro2.size() / 2 : 30);
+
+
+                        CellRange resultRanger = emptySheet.getCellRange(24 + (4 * i), 5);
+                        resultRanger.setText(result);
+                        tempRange.setText(result);
+                        tempRange.autoFitRows();
+                        resultRanger.setRowHeight(tempRange.getRowHeight() * intro2.size() / 2.5 > 30 ? tempRange.getRowHeight() * intro2.size() / 2.5 : 30);
+
+                        CellRange happenRanger = emptySheet.getCellRange(25 + (4 * i), 5);
+                        happenRanger.setText(happen);
+                        tempRange.setText(happen);
+                        tempRange.autoFitRows();
+                        happenRanger.setRowHeight(tempRange.getRowHeight() * intro2.size() / 2.5 > 49.5 ? tempRange.getRowHeight() * intro2.size() / 2.5 : 49.5);
+
+                        CellRange planRanger = emptySheet.getCellRange(26 + (4 * i), 5);
+                        planRanger.setText(plan);
+                        tempRange.setText(plan);
+                        tempRange.autoFitRows();
+                        planRanger.setRowHeight(tempRange.getRowHeight() * intro2.size() / 2.5 > 60.75 ? tempRange.getRowHeight() * intro2.size() / 2.5 : 60.75);
+                    } catch (Exception e) {
+                        String result = jsonObject.containsKey("result") ? jsonObject.getString("result") : "";
+                        String plan = jsonObject.containsKey("plan") ? jsonObject.getString("plan") : "";
+                        String target = jsonObject.containsKey("target") ? jsonObject.getString("target") : "";
+                        String happen = jsonObject.containsKey("happen") ? jsonObject.getString("happen") : "";
+                        String others = jsonObject.get("others") + "";
+
+                        if (!StrUtils.isNull(others)) {
+                            emptySheet.getCellRange(23 + (4 * i), 2).setText(date + "（陪同人：" + others + "）");
+                        } else {
+                            emptySheet.getCellRange(23 + (4 * i), 2).setText(date);
+                        }
+
+
+                        CellRange rangTarger = emptySheet.getCellRange(23 + (4 * i), 5);
+                        rangTarger.setText(target);
+                        tempRange.setText(target);
+                        tempRange.autoFitRows();
+                        rangTarger.setRowHeight(tempRange.getRowHeight() / 2.5 > 30 ? tempRange.getRowHeight() / 2 : 30);
+
+
+                        CellRange resultRanger = emptySheet.getCellRange(24 + (4 * i), 5);
+                        resultRanger.setText(result);
+                        tempRange.setText(result);
+                        tempRange.autoFitRows();
+                        resultRanger.setRowHeight(tempRange.getRowHeight() / 2.5 > 30 ? tempRange.getRowHeight() / 2.5 : 30);
+
+                        CellRange happenRanger = emptySheet.getCellRange(25 + (4 * i), 5);
+                        happenRanger.setText(happen);
+                        tempRange.setText(happen);
+                        tempRange.autoFitRows();
+                        happenRanger.setRowHeight(tempRange.getRowHeight() / 2.5 > 49.5 ? tempRange.getRowHeight() / 2.5 : 49.5);
+
+                        CellRange planRanger = emptySheet.getCellRange(26 + (4 * i), 5);
+                        planRanger.setText(plan);
+                        tempRange.setText(plan);
+                        tempRange.autoFitRows();
+                        planRanger.setRowHeight(tempRange.getRowHeight() / 2.5 > 60.75 ? tempRange.getRowHeight() / 2.5 : 60.75);
                     }
-
-
-                    CellRange rangTarger = emptySheet.getCellRange(23 + (4 * i), 5);
-                    rangTarger.setText(target);
-                    tempRange.setText(target);
-                    tempRange.autoFitRows();
-                    rangTarger.setRowHeight(tempRange.getRowHeight() / 2.5 > 20 ? tempRange.getRowHeight() / 2.5 : 20);
-
-
-                    CellRange resultRanger = emptySheet.getCellRange(24 + (4 * i), 5);
-                    resultRanger.setText(result);
-                    tempRange.setText(result);
-                    tempRange.autoFitRows();
-                    resultRanger.setRowHeight(tempRange.getRowHeight() / 2.5 > 20 ? tempRange.getRowHeight() / 2.5 : 20);
-
-                    CellRange happenRanger = emptySheet.getCellRange(25 + (4 * i), 5);
-                    happenRanger.setText(happen);
-                    tempRange.setText(happen);
-                    tempRange.autoFitRows();
-                    happenRanger.setRowHeight(tempRange.getRowHeight() / 2.5 > 49.5 ? tempRange.getRowHeight() / 2.5 : 49.5);
-
-                    CellRange planRanger = emptySheet.getCellRange(26 + (4 * i), 5);
-                    planRanger.setText(plan);
-                    tempRange.setText(plan);
-                    tempRange.autoFitRows();
-                    planRanger.setRowHeight(tempRange.getRowHeight() / 2.5 > 60.75 ? tempRange.getRowHeight() / 2.5 : 60.75);
 
 
                 }

@@ -181,8 +181,21 @@
             <version>2.6</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.12</version>
+        </dependency>
+
 
     </dependencies>
+
+
+
+
+
+
+
 
     <build>
         <plugins>
@@ -210,6 +223,8 @@
     </build>
 
     <repositories>
+
+
         <repository>
             <id>aliyun-repos</id>
             <url>http://maven.aliyun.com/nexus/content/groups/public/</url>

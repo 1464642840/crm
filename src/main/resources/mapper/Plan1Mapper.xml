@@ -184,6 +184,7 @@
         pl.date7,
         t.name companyName,
         pl.intro intro,
+        pl.intro2 intro2,
         g.sorce sorce,
         (select FValue from ERP_CustomValues where FieldsID=17 and OrderID=t.ord) yzjyl,
         (select FValue from ERP_CustomValues where FieldsID=16 and OrderID=t.ord) companyPersonNum,
@@ -206,15 +207,15 @@
         left join tel t on t.ord=pl.company
         left join person p on p.ord=pl.person
         left join gate g on g.ord = pl.cateid
-        where pl.cateid = #{id} and pl.company in (
-        select  company  from plan1 pl2
+        where pl.cateid = #{id} and pl.isPeitong=1 and pl.company in (
+        select company from plan1 pl2
         where
-        pl2.cateid = #{id}
+        pl2.cateid = #{id} and pl2.isPeitong=1
         <if test="startDate!=null">
             and pl2.date7 >= #{startDate}
         </if>
         <if test="endDate!=null">
-            and pl2.date7 &lt;= #{endDate}
+            and pl2.date7 &lt; #{endDate}
         </if>
 
         )
@@ -224,9 +225,21 @@
         order by pl.date7 desc
 
 
-
-
-
+    </select>
+    <select id="getGroupByYwy" resultType="java.util.Map">
+       SELECT
+      g.name,
+      COUNT(g.name) sl ,
+      pl.is_new isNew,
+      g.sorce
+    FROM
+      reply pl
+      RIGHT JOIN gate g
+        ON pl.cateid = g.ord
+    WHERE g.sorce IN (2, 3)
+      AND pl.date7 >= #{date}
+      AND g.del = 1
+    GROUP BY g.name,pl.is_new, g.sorce  order by g.sorce desc,g.name
     </select>
 
 
