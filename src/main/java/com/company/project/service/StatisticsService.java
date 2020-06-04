@@ -11,5 +11,5 @@ public interface StatisticsService {
 
     JSONObject getcustomerVisitStatistics(String type, Date sD, Date eD);
 
-    String getYwyVisitTodayStatistics() throws ParseException;
+    String getYwyVisitTodayStatistics(String date) throws ParseException;
 }

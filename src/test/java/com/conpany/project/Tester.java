@@ -3,7 +3,6 @@ package com.conpany.project;
 
 import com.company.project.Application;
 import com.company.project.core.MyThread;
-import com.company.project.dao.PersonMapper;
 import com.company.project.model.Tel;
 import com.company.project.service.PersonService;
 import com.company.project.service.Plan1Service;
@@ -15,11 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -106,11 +102,11 @@ public class Tester {
 
     @Test
     public  void testExport(){
-        try {
-            statisticsService.getYwyVisitTodayStatistics();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+//        try {
+//         //   statisticsService.getYwyVisitTodayStatistics(date);
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
     }
 
 

@@ -92,8 +92,8 @@ public class StatisticsController {
      * */
     @CrossOrigin(origins = "*", maxAge = 3600)
     @RequestMapping("/doExportBaiFang")
-    public Result doExport() throws ParseException {
-        return ResultGenerator.genSuccessResult(statisticsService.getYwyVisitTodayStatistics());
+    public Result doExport(@RequestParam String date) throws ParseException {
+        return ResultGenerator.genSuccessResult(statisticsService.getYwyVisitTodayStatistics(date));
 
     }
 

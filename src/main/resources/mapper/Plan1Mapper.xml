@@ -237,7 +237,8 @@
       RIGHT JOIN gate g
         ON pl.cateid = g.ord
     WHERE g.sorce IN (2, 3)
-      AND pl.date7 >= #{date}
+      AND pl.date7 >= #{startDate}
+       AND pl.date7 &lt; #{endDate}
       AND g.del = 1
     GROUP BY g.name,pl.is_new, g.sorce  order by g.sorce desc,g.name
     </select>

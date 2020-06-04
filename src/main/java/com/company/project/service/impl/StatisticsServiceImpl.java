@@ -310,15 +310,16 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public String getYwyVisitTodayStatistics() throws ParseException {
+    public String getYwyVisitTodayStatistics(String date) throws ParseException {
+        Date today = new Date(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date+" 23:59:59").getTime());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //获得本年的第一天
-        Date year = sdf.parse(new SimpleDateFormat("yyyy").format(new Date()) + "-01-01");
+        Date year = sdf.parse(new SimpleDateFormat("yyyy").format(today) + "-01-01");
         //获取本月的第一天
-        Date month = sdf.parse(new SimpleDateFormat("yyyy-MM").format(new Date()) + "-01");
-        List<Map<Object, Object>> yearData = plan1Mapper.getGroupByYwy(year);
-        List<Map<Object, Object>> monthData = plan1Mapper.getGroupByYwy(month);
-        List<Map<Object, Object>> todayData = plan1Mapper.getGroupByYwy(sdf.parse(sdf.format(new Date())));
+        Date month = sdf.parse(new SimpleDateFormat("yyyy-MM").format(today) + "-01");
+        List<Map<Object, Object>> yearData = plan1Mapper.getGroupByYwy(year,today);
+        List<Map<Object, Object>> monthData = plan1Mapper.getGroupByYwy(month,today);
+        List<Map<Object, Object>> todayData = plan1Mapper.getGroupByYwy(new SimpleDateFormat("yyyy-MM-dd").parse(date),today);
 
         //1.获取所有业务员
 
@@ -422,13 +423,12 @@ public class StatisticsServiceImpl implements StatisticsService {
         });
 
         //绘制excel表格
-        return   drawBaiFangExce(res, ywyNameList);
-
+        return drawBaiFangExce(res, ywyNameList,today);
 
 
     }
 
-    private String drawBaiFangExce(JSONObject res, List<String> ywyNameList) {
+    private String drawBaiFangExce(JSONObject res, List<String> ywyNameList, Date today) {
 
         File directory = new File("src/main/resources");
         String reportPath = null;
@@ -448,13 +448,13 @@ public class StatisticsServiceImpl implements StatisticsService {
         Worksheet sheet = worksheets.get(0);
         //大标题
         CellRange cellRange = sheet.getCellRange(1, 2);
-        cellRange.setText("合肥圆融客户拜访" + new SimpleDateFormat("yyyy年M月").format(new Date()) + "统计");
+        cellRange.setText("合肥圆融客户拜访" + new SimpleDateFormat("yyyy年M月").format(today) + "统计");
 
         //当天拜访标题
-        sheet.getCellRange(2, 5).setText(new SimpleDateFormat("M月d日").format(new Date()) + "拜访数据");
+        sheet.getCellRange(2, 5).setText(new SimpleDateFormat("M月d日").format(today) + "拜访数据");
 
         Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
+        c.setTime(today);
         int mon = c.get(Calendar.MONTH) + 1;
         int ye = c.get(Calendar.YEAR);
 
@@ -471,15 +471,15 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (int i = 0; i < gannaIndex; i++) {
             String s = ywyNameList.get(i);
             JSONObject jsonObject = res.getJSONObject(s);
-            JSONObject today = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
+            JSONObject todays = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
             JSONObject month = jsonObject.containsKey("month") ? jsonObject.getJSONObject("month") : new JSONObject();
             JSONObject year = jsonObject.containsKey("year") ? jsonObject.getJSONObject("year") : new JSONObject();
             //姓名
             sheet.getCellRange(startLine, 4).setText(s);
             //当天老客户
-            sheet.getCellRange(startLine, 5).setNumberValue(today.containsKey("0") ? today.getIntValue("0") : 0);
+            sheet.getCellRange(startLine, 5).setNumberValue(todays.containsKey("0") ? todays.getIntValue("0") : 0);
             //当天新客户
-            sheet.getCellRange(startLine, 6).setNumberValue(today.containsKey("1") ? today.getIntValue("1") : 0);
+            sheet.getCellRange(startLine, 6).setNumberValue(todays.containsKey("1") ? todays.getIntValue("1") : 0);
             //当天合计
             sheet.getCellRange(startLine, 7).setFormula("=SUM(E" + startLine + ":F" + startLine + ")");
 
@@ -522,15 +522,15 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (int i = gannaIndex; i < ywyNameList.size(); i++) {
             String s = ywyNameList.get(i);
             JSONObject jsonObject = res.getJSONObject(s);
-            JSONObject today = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
+            JSONObject todays = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
             JSONObject month = jsonObject.containsKey("month") ? jsonObject.getJSONObject("month") : new JSONObject();
             JSONObject year = jsonObject.containsKey("year") ? jsonObject.getJSONObject("year") : new JSONObject();
             //姓名
             sheet.getCellRange(startLine, 4).setText(s);
             //当天老客户
-            sheet.getCellRange(startLine, 5).setNumberValue(today.containsKey("0") ? today.getIntValue("0") : 0);
+            sheet.getCellRange(startLine, 5).setNumberValue(todays.containsKey("0") ? todays.getIntValue("0") : 0);
             //当天新客户
-            sheet.getCellRange(startLine, 6).setNumberValue(today.containsKey("1") ? today.getIntValue("1") : 0);
+            sheet.getCellRange(startLine, 6).setNumberValue(todays.containsKey("1") ? todays.getIntValue("1") : 0);
             //当天合计
             sheet.getCellRange(startLine, 7).setFormula("=SUM(E" + startLine + ":F" + startLine + ")");
 

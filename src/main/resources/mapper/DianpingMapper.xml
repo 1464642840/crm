@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.project.dao.DianpingMapper">
+  <resultMap id="BaseResultMap" type="com.company.project.model.Dianping">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" jdbcType="INTEGER" property="id" />
+    <result column="ord" jdbcType="INTEGER" property="ord" />
+    <result column="intro" jdbcType="NVARCHAR" property="intro" />
+    <result column="name" jdbcType="NVARCHAR" property="name" />
+    <result column="sort" jdbcType="INTEGER" property="sort" />
+    <result column="cateid" jdbcType="INTEGER" property="cateid" />
+    <result column="date7" jdbcType="TIMESTAMP" property="date7" />
+    <result column="alt" jdbcType="INTEGER" property="alt" />
+  </resultMap>
+</mapper>

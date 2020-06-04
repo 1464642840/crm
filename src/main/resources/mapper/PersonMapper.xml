@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.project.dao.PersonMapper">
+    <resultMap id="BaseResultMap" type="com.company.project.model.Person">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="ord" jdbcType="INTEGER" property="ord"/>
+        <result column="name" jdbcType="NVARCHAR" property="name"/>
+        <result column="sex" jdbcType="NVARCHAR" property="sex"/>
+        <result column="age" jdbcType="NVARCHAR" property="age"/>
+        <result column="jg" jdbcType="NVARCHAR" property="jg"/>
+        <result column="part1" jdbcType="NVARCHAR" property="part1"/>
+        <result column="job" jdbcType="NVARCHAR" property="job"/>
+        <result column="phone" jdbcType="NVARCHAR" property="phone"/>
+        <result column="phone2" jdbcType="NVARCHAR" property="phone2"/>
+        <result column="fax" jdbcType="NVARCHAR" property="fax"/>
+        <result column="mobile" jdbcType="NVARCHAR" property="mobile"/>
+        <result column="email" jdbcType="NVARCHAR" property="email"/>
+        <result column="msn" jdbcType="NVARCHAR" property="msn"/>
+        <result column="qq" jdbcType="NVARCHAR" property="qq"/>
+        <result column="zip" jdbcType="NVARCHAR" property="zip"/>
+        <result column="address" jdbcType="NVARCHAR" property="address"/>
+        <result column="photos" jdbcType="NVARCHAR" property="photos"/>
+        <result column="gate" jdbcType="NVARCHAR" property="gate"/>
+        <result column="year1" jdbcType="VARCHAR" property="year1"/>
+        <result column="company" jdbcType="INTEGER" property="company"/>
+        <result column="area" jdbcType="INTEGER" property="area"/>
+        <result column="sort" jdbcType="NVARCHAR" property="sort"/>
+        <result column="sort1" jdbcType="NVARCHAR" property="sort1"/>
+        <result column="trade" jdbcType="NVARCHAR" property="trade"/>
+        <result column="event" jdbcType="INTEGER" property="event"/>
+        <result column="chance" jdbcType="INTEGER" property="chance"/>
+        <result column="plan1" jdbcType="INTEGER" property="plan1"/>
+        <result column="numc1" jdbcType="INTEGER" property="numc1"/>
+        <result column="order1" jdbcType="INTEGER" property="order1"/>
+        <result column="xl" jdbcType="NVARCHAR" property="xl"/>
+        <result column="xw" jdbcType="NVARCHAR" property="xw"/>
+        <result column="zy" jdbcType="NVARCHAR" property="zy"/>
+        <result column="yx" jdbcType="NVARCHAR" property="yx"/>
+        <result column="mz" jdbcType="NVARCHAR" property="mz"/>
+        <result column="mobile2" jdbcType="NVARCHAR" property="mobile2"/>
+        <result column="sg" jdbcType="NVARCHAR" property="sg"/>
+        <result column="tz" jdbcType="NVARCHAR" property="tz"/>
+        <result column="tx" jdbcType="NVARCHAR" property="tx"/>
+        <result column="xm" jdbcType="NVARCHAR" property="xm"/>
+        <result column="xy" jdbcType="NVARCHAR" property="xy"/>
+        <result column="xyname" jdbcType="NVARCHAR" property="xyname"/>
+        <result column="yj" jdbcType="NVARCHAR" property="yj"/>
+        <result column="yjsort" jdbcType="NVARCHAR" property="yjsort"/>
+        <result column="yjname" jdbcType="NVARCHAR" property="yjname"/>
+        <result column="yjsize" jdbcType="NVARCHAR" property="yjsize"/>
+        <result column="hc" jdbcType="NVARCHAR" property="hc"/>
+        <result column="hcsort" jdbcType="NVARCHAR" property="hcsort"/>
+        <result column="jk" jdbcType="NVARCHAR" property="jk"/>
+        <result column="jb" jdbcType="NVARCHAR" property="jb"/>
+        <result column="jz" jdbcType="NVARCHAR" property="jz"/>
+        <result column="sc" jdbcType="NVARCHAR" property="sc"/>
+        <result column="scsort" jdbcType="NVARCHAR" property="scsort"/>
+        <result column="scys" jdbcType="NVARCHAR" property="scys"/>
+        <result column="scpz" jdbcType="NVARCHAR" property="scpz"/>
+        <result column="tezheng" jdbcType="NVARCHAR" property="tezheng"/>
+        <result column="person" jdbcType="INTEGER" property="person"/>
+        <result column="gx" jdbcType="NVARCHAR" property="gx"/>
+        <result column="cateid" jdbcType="INTEGER" property="cateid"/>
+        <result column="cateid2" jdbcType="INTEGER" property="cateid2"/>
+        <result column="cateid3" jdbcType="INTEGER" property="cateid3"/>
+        <result column="date7" jdbcType="TIMESTAMP" property="date7"/>
+        <result column="date4" jdbcType="TIMESTAMP" property="date4"/>
+        <result column="date5" jdbcType="TIMESTAMP" property="date5"/>
+        <result column="del" jdbcType="INTEGER" property="del"/>
+        <result column="delcate" jdbcType="INTEGER" property="delcate"/>
+        <result column="deldate" jdbcType="TIMESTAMP" property="deldate"/>
+        <result column="date8" jdbcType="TIMESTAMP" property="date8"/>
+        <result column="pym" jdbcType="NVARCHAR" property="pym"/>
+        <result column="sort3" jdbcType="INTEGER" property="sort3"/>
+        <result column="tezhen" jdbcType="NVARCHAR" property="tezhen"/>
+        <result column="alt" jdbcType="VARCHAR" property="alt"/>
+        <result column="birthdayType" jdbcType="INTEGER" property="birthdayType"/>
+        <result column="person_excel_drSign" jdbcType="BIGINT" property="person_excel_drSign"/>
+        <result column="person_excel_drUser" jdbcType="INTEGER" property="person_excel_drUser"/>
+        <result column="role" jdbcType="INTEGER" property="role"/>
+        <result column="bDays" jdbcType="INTEGER" property="bDays"/>
+        <result column="bDaysYear" jdbcType="INTEGER" property="bDaysYear"/>
+        <result column="weixinAcc" jdbcType="NVARCHAR" property="weixinAcc"/>
+        <result column="joy" jdbcType="LONGNVARCHAR" property="joy"/>
+        <result column="intro" jdbcType="LONGNVARCHAR" property="intro"/>
+    </resultMap>
+    <insert id="insertKey" parameterType="com.company.project.model.Person" useGeneratedKeys="true" keyProperty="ord"
+            keyColumn="ord">
+
+        insert into person(sex,name,mobile,job,msn,company,address,sort,sort1,date7,del,birthdayType,bDays,cateid)
+		values(#{sex},#{name},#{mobile},#{job},#{msn},#{company},#{address},#{sort},#{sort1},#{date7},#{del},#{birthdayType},#{bDays},#{cateid})
+
+
+    </insert>
+    <update id="batchUpdate" parameterType="list">
+        update person
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="company =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.company!=null">
+                        when ord=#{i.ord} then #{i.company}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix=" name =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.name!=null">
+                        when ord=#{i.ord} then #{i.name}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="sex =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.sex!=null">
+                        when ord=#{i.ord} then #{i.sex}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="job =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.job!=null">
+                        when ord=#{i.ord} then #{i.job}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="phone =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.phone!=null">
+                        when ord=#{i.ord} then #{i.phone}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="mobile =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.mobile!=null">
+                        when ord=#{i.ord} then #{i.mobile}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="email =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.email!=null">
+                        when ord=#{i.ord} then #{i.email}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="qq =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.qq!=null">
+                        when ord=#{i.ord} then #{i.qq}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="msn =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.msn!=null">
+                        when ord=#{i.ord} then #{i.msn}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="i" index="index">
+            ord=#{i.ord}
+        </foreach>
+    </update>
+</mapper>
