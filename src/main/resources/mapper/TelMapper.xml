@@ -202,7 +202,7 @@
             and pl.date7&lt;=#{visitDate2}
         </if>
         <if test="ywy!=null">
-            and g.username = #{ywy}
+            and (g.username = #{ywy} or CHARINDEX(#{cateid},t.share) > 0)
         </if>
 
         <if test="sorce!=null">
@@ -247,6 +247,112 @@
         <foreach collection="numSet" item="s" close=")" open="(" separator=",">
             ${s}
         </foreach>
+
+    </select>
+    <select id="findByBaiFangCustList" resultType="com.company.project.model.Tel">
+
+        select
+        <if test="order.equals('distance')">
+            ROUND(
+            6378.138 * 2 * ASIN(
+            SQRT(
+            power(
+            SIN(
+            (
+            #{lat} * PI() / 180 - t.lat * PI() / 180
+            ) / 2
+            ),
+            2
+            ) + COS(#{lat} * PI() / 180) * COS(t.lat * PI() / 180) * power(
+            SIN(
+            (
+            #{lng} * PI() / 180 - t.lng * PI() / 180
+            ) / 2
+            ),
+            2
+            )
+            )
+            ) * 1000
+            ,0) as juli,
+        </if>
+
+        (select ev.FValue
+        from erp_customvalues ev
+        where ev.FieldsID=27 and OrderID=t.ord) businessType ,
+
+        t.ord,
+        t.khid,
+        t.name,
+        t.address,
+        t.person,
+        p.name person_name,
+        p.mobile,
+        (CASE
+        WHEN g.ord=#{cateid}  or CHARINDEX(#{cateid},t.share)>0
+        THEN 1
+        ELSE 0
+        END ) isHisCustomer
+
+        FROM
+        tel t
+        LEFT JOIN person p
+        ON t.person = p.ord
+        LEFT JOIN gate g
+        ON g.ord =t.cateid
+        left join erp_customvalues e on t.ord=e.OrderID and e.FieldsID=13
+
+
+        <if test="visitDate1!=null||visitDate2!=null">
+            left join plan1 pl
+            on pl.ord = t.ord
+        </if>
+        WHERE t.del = 1
+        <if test="sorce==2">
+            and (e.FValue='塑料' or e.FValue='再生' or e.FValue='公用' or e.FValue is null or g.ord=#{cateid}  or CHARINDEX(#{cateid},t.share)>0)
+        </if>
+        <if test="sorce==3">
+            and (e.FValue='钢材' or e.FValue='公用' or e.FValue is null or g.ord=#{cateid}  or CHARINDEX(#{cateid},t.share)>0)
+        </if>
+        <if test="sorce!=2 &amp;&amp; sorce!=3">
+            and (e.FValue='公用' or e.FValue is null)
+        </if>
+        <if test="visitDate1!=null">
+            and pl.date7>=#{visitDate1}
+        </if>
+        <if test="visitDate2!=null">
+            and pl.date7&lt;=#{visitDate2}
+        </if>
+
+
+
+
+        <if test="custName!=null">
+            and t.name&lt;=#{custName}
+        </if>
+        AND t.name IS NOT NULL
+        AND (p.del = 1 or p.del is null)
+        <if test=" keyword!=null">
+            and t.name like '%${keyword}%'
+        </if>
+        <if test="businessType!=null">
+            and #{businessType}=(select ev.FValue
+            from erp_customvalues ev
+            where ev.FieldsID=27 and OrderID=t.ord)
+        </if>
+        <if test="createDate1!=null">
+            and t.date1>=#{createDate1}
+        </if>
+        <if test="createDate2!=null">
+            and t.date1&lt;=#{createDate2}
+        </if>
+
+
+        <if test="order.equals('name')">
+            order by t.pym ,t.name
+        </if>
+        <if test="order.equals('distance')">
+            order by juli,t.name
+        </if>
 
     </select>
 

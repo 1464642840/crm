@@ -20,4 +20,6 @@ public interface TelMapper extends Mapper<Tel> {
     List<String> selectExistExtendFields(@Param("ord") Integer ord, @Param("numSet") Set<String> numSet);
 
     void inserKey(Tel tel);
+
+    List<Tel> findByBaiFangCustList(Map map);
 }

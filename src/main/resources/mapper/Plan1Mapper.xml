@@ -90,7 +90,7 @@
         left join reply ry on ry.plan1 = pl.ord
         left join dianping dp on dp.ord=ry.id
 
-        where 1=1
+        where 1=1 and convert(nvarchar(255),pl.intro) !=''
         <if test="ywy != null">
             and pl.cateid=#{ywyId}
         </if>
@@ -207,10 +207,10 @@
         left join tel t on t.ord=pl.company
         left join person p on p.ord=pl.person
         left join gate g on g.ord = pl.cateid
-        where pl.cateid = #{id} and pl.isPeitong=1 and pl.company in (
+        where pl.cateid = #{id}  and pl.company in (
         select company from plan1 pl2
         where
-        pl2.cateid = #{id} and pl2.isPeitong=1
+        pl2.cateid = #{id}
         <if test="startDate!=null">
             and pl2.date7 >= #{startDate}
         </if>

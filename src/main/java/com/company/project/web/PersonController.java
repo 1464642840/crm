@@ -1,8 +1,11 @@
 package com.company.project.web;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
 import com.company.project.model.Person;
+import com.company.project.model.Tel;
 import com.company.project.service.PersonService;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
@@ -34,7 +37,6 @@ public class PersonController {
         personService.deleteById(id);
         return ResultGenerator.genSuccessResult();
     }
-
 
 
     @PostMapping("/update")
@@ -76,6 +78,31 @@ public class PersonController {
         Person person = personService.findById(id);
         return ResultGenerator.genSuccessResult(person);
     }
+
+
+    @PostMapping("/getlist")
+    public Result getlist(@RequestParam(defaultValue = "") Integer ord, @RequestParam(defaultValue = "") Integer ywyId) {
+
+        Condition c = new Condition(Person.class);
+        Example.Criteria criteria = c.createCriteria();
+        criteria.andEqualTo("company", ord);
+        criteria.andEqualTo("cateid", ywyId);
+
+
+        PageHelper.startPage(1, 100);
+        List<Person> list = personService.findByCondition(c);
+        PageInfo pageInfo = new PageInfo(list);
+
+        String[] fileds = {"sex", "name", "address", "job", "mobile", "msn", "phone", "qq","email","ord"};
+        SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Person.class, fileds);
+        String jsonStu = JSONArray.toJSONString(list, filter);
+        List parse = (List) JSONArray.parse(jsonStu);
+        pageInfo.setList(parse);
+        return ResultGenerator.genSuccessResult(pageInfo);
+
+
+    }
+
 
     @PostMapping("/list")
     public Result list(@RequestParam(defaultValue = "") String company, @RequestParam(defaultValue = "") String person_name, @RequestParam(defaultValue = "") String phone, @RequestParam(defaultValue = "") String mobile, @RequestParam(defaultValue = "") String qq, @RequestParam(defaultValue = "") String email, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "10") Integer size) {

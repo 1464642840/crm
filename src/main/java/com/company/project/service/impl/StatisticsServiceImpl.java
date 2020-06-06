@@ -2,6 +2,7 @@ package com.company.project.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.company.project.Constants;
 import com.company.project.dao.GateMapper;
 import com.company.project.dao.Plan1Mapper;
 import com.company.project.dao.ReplyMapper;
@@ -311,15 +312,30 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public String getYwyVisitTodayStatistics(String date) throws ParseException {
-        Date today = new Date(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date+" 23:59:59").getTime());
+
+        Date today = new Date(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date + " 23:59:59").getTime());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date siDate = sdf.parse("2020-06-04");
+
         //获得本年的第一天
         Date year = sdf.parse(new SimpleDateFormat("yyyy").format(today) + "-01-01");
         //获取本月的第一天
         Date month = sdf.parse(new SimpleDateFormat("yyyy-MM").format(today) + "-01");
-        List<Map<Object, Object>> yearData = plan1Mapper.getGroupByYwy(year,today);
-        List<Map<Object, Object>> monthData = plan1Mapper.getGroupByYwy(month,today);
-        List<Map<Object, Object>> todayData = plan1Mapper.getGroupByYwy(new SimpleDateFormat("yyyy-MM-dd").parse(date),today);
+
+
+        List<Map<Object, Object>> yearData = null;
+        List<Map<Object, Object>> monthData = null;
+        if (year.getTime() < siDate.getTime()) {
+            yearData = plan1Mapper.getGroupByYwy(siDate, today);
+        } else {
+            yearData = plan1Mapper.getGroupByYwy(year, today);
+        }
+        if (month.getTime() < siDate.getTime()) {
+            monthData = plan1Mapper.getGroupByYwy(siDate, today);
+        } else {
+            monthData = plan1Mapper.getGroupByYwy(month, today);
+        }
+        List<Map<Object, Object>> todayData = plan1Mapper.getGroupByYwy(new SimpleDateFormat("yyyy-MM-dd").parse(date), today);
 
         //1.获取所有业务员
 
@@ -376,6 +392,51 @@ public class StatisticsServiceImpl implements StatisticsService {
             ywyObj.put("today", yearObj);
             res.put(name, ywyObj);
         }
+
+
+        JSONObject baiFangTongji = Constants.baiFangTongji;
+        Set<String> strings = baiFangTongji.keySet();
+        for (String ywy : strings) {
+            JSONObject jsonObject = baiFangTongji.getJSONObject(ywy);
+
+            if (res.containsKey(ywy)) {
+                JSONObject jsonObject1 = res.getJSONObject(ywy);
+                if (month.getTime() < siDate.getTime()) {
+                    JSONObject month1 = jsonObject.getJSONObject("month");
+                    JSONObject month2 = jsonObject1.getJSONObject("month");
+                    if (month2 == null) {
+                        month2 = month1;
+                    } else {
+                        month2.put("0", month1.getIntValue("0") + (month2.containsKey("0") ? month2.getIntValue("0") : 0));
+                        month2.put("1", month1.getIntValue("1") + (month2.containsKey("1") ? month2.getIntValue("1") : 0));
+                    }
+                    jsonObject1.put("month", month2);
+                    res.put(ywy, jsonObject1);
+                }
+                if (year.getTime() < siDate.getTime()) {
+                    JSONObject month1 = jsonObject.getJSONObject("year");
+                    JSONObject month2 = jsonObject1.getJSONObject("year");
+                    if (month2 == null) {
+                        month2 = month1;
+                    } else {
+                        month2.put("0", month1.getIntValue("0") + (month2.containsKey("0") ? month2.getIntValue("0") : 0));
+                        month2.put("1", month1.getIntValue("1") + (month2.containsKey("1") ? month2.getIntValue("1") : 0));
+                    }
+                    jsonObject1.put("year", month2);
+                    res.put(ywy, jsonObject1);
+                }
+
+            } else {
+                Calendar instance = Calendar.getInstance();
+                instance.setTime(today);
+                if (instance.get(Calendar.YEAR) == 2020) {
+                    res.put(ywy, jsonObject);
+                }
+            }
+
+        }
+
+
         //排序
         List<String> ywyNameList = new ArrayList<>();
         ywyNameList.addAll(res.keySet());
@@ -421,9 +482,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                 }
             }
         });
-
+        System.out.println(res);
         //绘制excel表格
-        return drawBaiFangExce(res, ywyNameList,today);
+        return drawBaiFangExce(res, ywyNameList, today);
 
 
     }
@@ -437,6 +498,9 @@ public class StatisticsServiceImpl implements StatisticsService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Calendar instance = Calendar.getInstance();
+        instance.setTime(today);
+        int i1 = instance.get(Calendar.YEAR);
         File f = new File(reportPath + "/file/合肥圆融2020年xx月客户拜访记录总表.xlsx");
         Workbook workbook = new Workbook();
         try {
@@ -576,9 +640,59 @@ public class StatisticsServiceImpl implements StatisticsService {
 
 
         workbook.calculateAllValue();
-        String fileName = "合肥圆融2020年" + mon + "月客户拜访记录总表.xlsx" + "VVV" + UUID.randomUUID().toString();
+        String fileName = "合肥圆融"+instance.get(Calendar.YEAR)+"年" + mon + "月客户拜访记录总表.xlsx" + "VVV" + UUID.randomUUID().toString();
         workbook.saveToFile("E:/springboot/" + fileName);
         return fileName;
+    }
+
+
+    public static void main(String[] args) {
+
+        Workbook workbook = new Workbook();
+        try {
+            workbook.loadFromStream(new FileInputStream("C:\\Users\\Administrator\\Desktop\\合肥圆融2020年6月客户拜访记录总表(1).xlsx"));
+            WorksheetsCollection worksheets = workbook.getWorksheets();
+            Worksheet sheet = worksheets.get("数量汇总表");
+            CellRange[] rows = sheet.getRows();
+            JSONObject res = new JSONObject();
+            for (int i = 3; i <= 45; i++) {
+
+                String ywy = sheet.get(i + 1, 4).getText();
+                JSONObject obj = res.containsKey("ywy") ? res.getJSONObject(ywy) : new JSONObject();
+
+
+                if (i <= 21) {
+                    obj.put("sorce", 3);
+
+                } else if (i == 22) {
+                    continue;
+                } else if (i > 22) {
+                    obj.put("sorce", 2);
+                }
+
+                System.out.println(ywy);
+                JSONObject month = new JSONObject();
+                JSONObject year = new JSONObject();
+                //当月老客户
+                month.put("0", Integer.parseInt(sheet.get(i + 1, 8).getNumberText()));
+                //当月新客户
+                month.put("1", Integer.parseInt(sheet.get(i + 1, 9).getNumberText()));
+                //当年新客户
+                year.put("0", Integer.parseInt(sheet.get(i + 1, 11).getNumberText()));
+                //当月新客户
+                year.put("1", Integer.parseInt(sheet.get(i + 1, 12).getNumberText()));
+
+                obj.put("month", month);
+                obj.put("year", year);
+                res.put(ywy, obj);
+
+
+            }
+            System.out.println(res);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
