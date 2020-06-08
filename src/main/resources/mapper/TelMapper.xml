@@ -140,7 +140,7 @@
 
 
     <select id="findByMyCondition" resultMap="BaseResultMap" parameterType="map">
-        select
+        select distinct
         <if test="order.equals('distance')">
             ROUND(
             6378.138 * 2 * ASIN(
@@ -165,9 +165,7 @@
             ,0) as juli,
         </if>
 
-        (select ev.FValue
-        from erp_customvalues ev
-        where ev.FieldsID=27 and OrderID=t.ord) businessType ,
+        erp.FValue businessType ,
 
         t.ord,
         t.khid,
@@ -188,25 +186,43 @@
         ON t.person = p.ord
         LEFT JOIN gate g
         ON g.ord =t.cateid
+        LEFT JOIN erp_customvalues erp
+        ON erp.OrderID =t.ord and erp.FieldsID in (27)
 
 
         <if test="visitDate1!=null||visitDate2!=null">
             left join plan1 pl
             on pl.ord = t.ord
         </if>
-        WHERE t.del = 1
+        WHERE ((t.del = 1
+
+        <if test="ywy!=null">
+            and (g.username = #{ywy} or CHARINDEX(#{cateid},t.share) > 0)
+        </if>
+        <if test="sorce!=null">
+            and g.sorce=#{sorce}
+        </if>
+        )or (convert(nvarchar(255),erp.FValue)='供应商'
+
+        <if test="bumenId==2">
+            and (convert(nvarchar(255),( select ev.FValue from erp_customvalues ev where ev.OrderID=t.ord and
+            ev.FieldsID=30 )) in ('内部组织','费用类供应商','塑料供应商','公用','') or convert(nvarchar(255),( select ev.FValue from
+            erp_customvalues ev where ev.OrderID=t.ord and
+            ev.FieldsID=30 )) is null )
+        </if>
+        <if test="bumenId==3">
+            and (convert(nvarchar(255),( select ev.FValue from erp_customvalues ev where ev.OrderID=t.ord and
+            ev.FieldsID=30 )) in ('内部组织','费用类供应商','钢材供应商','公用','',null) or convert(nvarchar(255),( select ev.FValue from
+            erp_customvalues ev where ev.OrderID=t.ord and
+            ev.FieldsID=30 )) is null)
+        </if>
+        ))
+
         <if test="visitDate1!=null">
             and pl.date7>=#{visitDate1}
         </if>
         <if test="visitDate2!=null">
             and pl.date7&lt;=#{visitDate2}
-        </if>
-        <if test="ywy!=null">
-            and (g.username = #{ywy} or CHARINDEX(#{cateid},t.share) > 0)
-        </if>
-
-        <if test="sorce!=null">
-            and g.sorce=#{sorce}
         </if>
 
         <if test="custName!=null">
@@ -288,7 +304,7 @@
         p.name person_name,
         p.mobile,
         (CASE
-        WHEN g.ord=#{cateid}  or CHARINDEX(#{cateid},t.share)>0
+        WHEN g.ord=#{cateid} or CHARINDEX(#{cateid},t.share)>0
         THEN 1
         ELSE 0
         END ) isHisCustomer
@@ -300,6 +316,8 @@
         LEFT JOIN gate g
         ON g.ord =t.cateid
         left join erp_customvalues e on t.ord=e.OrderID and e.FieldsID=13
+        LEFT JOIN erp_customvalues erp
+        ON erp.OrderID =t.ord and erp.FieldsID=27
 
 
         <if test="visitDate1!=null||visitDate2!=null">
@@ -308,13 +326,19 @@
         </if>
         WHERE t.del = 1
         <if test="sorce==2">
-            and (e.FValue='塑料' or e.FValue='再生' or e.FValue='公用' or e.FValue is null or g.ord=#{cateid}  or CHARINDEX(#{cateid},t.share)>0)
+            and ((e.FValue='塑料' or e.FValue='再生' or e.FValue='公用' or e.FValue is null or g.ord=#{cateid} or
+            CHARINDEX(#{cateid},t.share)>0) or (convert(nvarchar(255),erp.FValue)='供应商'
+
+            ))
         </if>
         <if test="sorce==3">
-            and (e.FValue='钢材' or e.FValue='公用' or e.FValue is null or g.ord=#{cateid}  or CHARINDEX(#{cateid},t.share)>0)
+            and ((e.FValue='钢材' or e.FValue='公用' or e.FValue is null or g.ord=#{cateid} or
+            CHARINDEX(#{cateid},t.share)>0) or (convert(nvarchar(255),erp.FValue)='供应商'
+            ))
         </if>
         <if test="sorce!=2 &amp;&amp; sorce!=3">
-            and (e.FValue='公用' or e.FValue is null)
+            and (e.FValue='公用' or e.FValue is null or g.ord=#{cateid} or
+            CHARINDEX(#{cateid},t.share)>0 or (convert(nvarchar(255),erp.FValue)='供应商'))
         </if>
         <if test="visitDate1!=null">
             and pl.date7>=#{visitDate1}
@@ -322,8 +346,6 @@
         <if test="visitDate2!=null">
             and pl.date7&lt;=#{visitDate2}
         </if>
-
-
 
 
         <if test="custName!=null">
@@ -348,10 +370,10 @@
 
 
         <if test="order.equals('name')">
-            order by t.pym ,t.name
+            order by isHisCustomer desc,t.pym ,t.name
         </if>
         <if test="order.equals('distance')">
-            order by juli,t.name
+            order by isHisCustomer desc,juli,t.name
         </if>
 
     </select>

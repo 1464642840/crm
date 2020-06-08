@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.company.project.core.MyThread;
 import com.company.project.core.ServiceException;
+import com.company.project.dao.ErpCustomvaluesMapper;
 import com.company.project.dao.Plan1Mapper;
 import com.company.project.dao.ReplyMapper;
 import com.company.project.dao.TelMapper;
+import com.company.project.model.ErpCustomvalues;
 import com.company.project.model.Gate;
 import com.company.project.model.Plan1;
 import com.company.project.model.Reply;
@@ -57,6 +59,9 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
 
     @Resource
     private GateService gateService;
+
+    @Resource
+    private ErpCustomvaluesMapper erpCustomvaluesMapper;
 
     @Resource
     private TelMapper telMapper;
@@ -253,16 +258,63 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
         reply.setName(name);
         reply.setName2(name2);
         //设置是否为新客户
-        String companyName = telMapper.selectByPrimaryKey(plan1.getCompany()).getName();
-        try {
-            if (StatisticsUtils.isNewCustomer(companyName, date)) {
-                reply.setIsNew(1);
+        List<HashMap<String, Object>> tels = telMapper.selectByPrimaryKeyInfo(plan1.getCompany());
+        if (!CollectionUtils.isEmpty(tels)) {
+            HashMap<String, Object> stringObjectHashMap = tels.get(0);
+            String fenzu = stringObjectHashMap.get("fenzu") + "";
+            String companyName = stringObjectHashMap.get("name") + "";
+            String xin = stringObjectHashMap.get("xin") + "";
+            if (fenzu.equals("客户")) {
+                try {
+                    if (StatisticsUtils.isNewCustomer(companyName, date)) {
+                        reply.setIsNew(1);
+                    } else {
+                        reply.setIsNew(0);
+                    }
+                } catch (Exception e) {
+
+                }
+            } else if (fenzu.equals("供应商")) {
+                try {
+                    if (StatisticsUtils.isNewGys(companyName, date)) {
+                        reply.setIsNew(1);
+                    } else {
+                        reply.setIsNew(0);
+                    }
+                } catch (Exception e) {
+
+                }
             } else {
-                reply.setIsNew(0);
+                try {
+                    if (StatisticsUtils.isNewCustomer(companyName, date)) {
+                        reply.setIsNew(1);
+                        if (StatisticsUtils.isNewGys(companyName, date)) {
+                            reply.setIsNew(1);
+                        } else {
+                            reply.setIsNew(0);
+                        }
+                    } else {
+                        reply.setIsNew(0);
+                    }
+
+                } catch (Exception e) {
+
+                }
+
             }
-        } catch (Exception e) {
+
+            if (StrUtils.isNull(xin)) {
+                ErpCustomvalues erpCustomvalues = new ErpCustomvalues();
+                erpCustomvalues.setFvalue("是");
+                erpCustomvalues.setOrderid(plan1.getCompany());
+                erpCustomvalues.setFieldsid(15);
+                erpCustomvaluesMapper.insert(erpCustomvalues);
+            } else if (!xin.equals(reply.getIsNew() == 1 ? "是" : "否")) {
+                erpCustomvaluesMapper.upDateFileds(15, plan1.getCompany(), xin);
+            }
 
         }
+
         replyMapper.insertSelective(reply);
 
         return plan1;
@@ -454,7 +506,7 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                         String companyName = datum.get("companyName").toString();
                         String intro = datum.get("intro").toString();
                         String intro2 = datum.get("intro2").toString();
-                        String others =datum.containsKey("others")? datum.get("others").toString():"";
+                        String others = datum.containsKey("others") ? datum.get("others").toString() : "";
                         if (!hashSet.add(intro + companyName + date7)) {
                             continue;
                         }
@@ -511,7 +563,7 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
 
         } else if ("pdf".equals(type)) {
             String endDateString = new SimpleDateFormat("yyyy年M月d日").format(new Date(endDate.getTime() - 3600 * 24 * 1000));
-            zipFileName = endDateString + bumen + "部拜访统计.pdf" + "VVV" + UUID.randomUUID().toString();
+            zipFileName = endDateString + bumen + "部拜访统计记录.pdf" + "VVV" + UUID.randomUUID().toString();
             PDFMergerUtility mergePdf = new PDFMergerUtility();
             mergePdf.setDestinationFileName(path + "/" + zipFileName);
             ArrayList<String> fileList = new ArrayList<>();
@@ -525,10 +577,10 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
             }
             try {
                 mergePdf.mergeDocuments();
-                PDFUtils.addPageNum(path + "/" + zipFileName,path + "/" + zipFileName+"_1");
+                PDFUtils.addPageNum(path + "/" + zipFileName, path + "/" + zipFileName + "_1");
 
                 new File(path + "/" + zipFileName).delete();
-                zipFileName+="_1";
+                zipFileName += "_1";
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -621,9 +673,9 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                     cellRange1.setText("□是            ■否");
                 }
                 //企业人数
-                emptySheet.getCellRange(8, 3).setText(StrUtils.isNull(info.get("companyPersonNum") + "")?"":info.get("companyPersonNum") + "");
+                emptySheet.getCellRange(8, 3).setText(StrUtils.isNull(info.get("companyPersonNum") + "") ? "" : info.get("companyPersonNum") + "");
                 //企业规模
-                emptySheet.getCellRange(8, 6).setText(StrUtils.isNull(info.get("companyGuimo") + "")?"":info.get("companyGuimo") + "");
+                emptySheet.getCellRange(8, 6).setText(StrUtils.isNull(info.get("companyGuimo") + "") ? "" : info.get("companyGuimo") + "");
                 //联系人信息
                 emptySheet.getCellRange(9, 3).setText("姓名：" + (StrUtils.isNull(info.get("linkName") + "") ? "" : info.get("linkName")) + "          性别：" + (StrUtils.isNull(info.get("linkSex") + "") ? "" : info.get("linkSex")) +
                         "      部门及职位： " + (StrUtils.isNull(info.get("linkManJob") + "") ? "" : info.get("linkManJob")) + "     手机号码：" + (StrUtils.isNull(info.get("mobile") + "") ? "" : info.get("mobile")));

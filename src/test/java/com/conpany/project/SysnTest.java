@@ -377,7 +377,7 @@ public class SysnTest {
                         case "是否为新供应商":
 
                             if (!res.containsKey("@meju_27")) {
-                                if (stringCellValue.contains("供应商")) {
+                                if (lastName.contains("供应商")) {
                                     res.put("@meju_27", 28);
                                 } else {
                                     res.put("@meju_27", 27);

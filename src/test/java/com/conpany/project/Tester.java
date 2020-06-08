@@ -86,13 +86,14 @@ public class Tester {
         List<Tel> all = telService.findAll();
         ThreadPoolExecutor instance = MyThread.getInstance();
         for (Tel tel : all) {
-            String address = tel.getAddress();
+            String address = StrUtils.clearAllSymbol(tel.getAddress());
             if (StrUtils.isNull(address)) {
                 continue;
             }
             instance.execute(new Runnable() {
                 @Override
                 public void run() {
+                    System.out.println(address);
                     String geocoderLatitude = GaodeUtils.getGeocoderLatitude(address);
                     String[] split = geocoderLatitude.split(",");
                     tel.setLng(new BigDecimal(split[0]));

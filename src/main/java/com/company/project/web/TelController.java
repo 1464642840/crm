@@ -131,11 +131,11 @@ public class TelController {
             map.put("position", position); //职位
         } else {
             List<Map<Object, Object>> positionByName = gateService.getPositionByName(ywy);
-           try {
-               position = positionByName.get(0).get("position").toString();
-           }catch (Exception e){
-               position="普通员工";
-           }
+            try {
+                position = positionByName.get(0).get("position").toString();
+            } catch (Exception e) {
+                position = "普通员工";
+            }
             map.put("position", position); //职位
         }
         map.put("size", size);
@@ -154,10 +154,15 @@ public class TelController {
             map.put("lat", lat);
         }
 
-        List<Tel> list = telService.findByMyCondition(map);
+        List<Tel> list = new ArrayList<>();
+        try {
+            list=telService.findByMyCondition(map);
+        } catch (Exception e) {
+            return ResultGenerator.genFailResult(e.getMessage());
+        }
         PageInfo pageInfo = new PageInfo(list);
 
-        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile", "businessType","isHisCustomer"};
+        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile", "businessType", "isHisCustomer"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Tel.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);

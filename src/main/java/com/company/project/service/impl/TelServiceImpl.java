@@ -1,5 +1,6 @@
 package com.company.project.service.impl;
 
+import com.company.project.core.ServiceException;
 import com.company.project.dao.ErpCustomvaluesMapper;
 import com.company.project.dao.TelMapper;
 import com.company.project.model.ErpCustomvalues;
@@ -35,12 +36,15 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
     @Override
     public List<Tel> findByMyCondition(Map map) {
         Gate by = gateService.findBy("username", map.get("ywy"));
+        if (by == null) {
+            throw new ServiceException("找不到账号信息");
+        }
         map.put("username", by.getUsername());
         map.put("cateid", by.getOrd().toString());
+        map.put("bumenId", by.getSorce().toString());
         //客户列表
         if (Integer.parseInt(map.get("size").toString()) == 15) {
             //用户对象
-
 
 
             String position = map.get("position").toString();
@@ -56,6 +60,7 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
                 } else if ("总经理".equals(position) || "风控".equals(position)) {
                     String bumen = map.containsKey("部门") ? map.get("bumen").toString() : "";
                     map.remove("ywy");
+                    map.remove("bumenId");
                 }
             }
 
