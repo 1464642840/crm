@@ -310,7 +310,7 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                 erpCustomvalues.setFieldsid(15);
                 erpCustomvaluesMapper.insert(erpCustomvalues);
             } else if (!xin.equals(reply.getIsNew() == 1 ? "是" : "否")) {
-                erpCustomvaluesMapper.upDateFileds(15, plan1.getCompany(), xin);
+                erpCustomvaluesMapper.upDateFileds(15, plan1.getCompany(), reply.getIsNew() == 1 ? "是" : "否");
             }
 
         }
