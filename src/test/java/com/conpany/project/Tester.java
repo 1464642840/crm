@@ -172,6 +172,11 @@ public class Tester {
 
     }
 
+    @Test
+    public void addPersonBaifangCount() throws ParseException {
+        insertTO(82,1,2);
+    }
+
     private void insertTO(Integer gateId, int new_, int old_) throws ParseException {
 
         for (int i = 0; i < new_; i++) {
@@ -211,6 +216,9 @@ public class Tester {
             replyService.saveSelective(reply);
         }
     }
+
+
+
 
 
 }

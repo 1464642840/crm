@@ -5,6 +5,8 @@ import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
 import com.company.project.core.ServiceException;
+import com.company.project.dao.ErpCustomvaluesMapper;
+import com.company.project.model.ErpCustomvalues;
 import com.company.project.model.Tel;
 import com.company.project.service.GateService;
 import com.company.project.service.TelService;
@@ -34,6 +36,9 @@ public class TelController {
     private TelService telService;
     @Resource
     private GateService gateService;
+
+    @Resource
+    ErpCustomvaluesMapper erpCustomvaluesMapper;
 
     @PostMapping("/add")
     public Result add(Tel tel) {
@@ -84,6 +89,17 @@ public class TelController {
         }
         return ResultGenerator.genSuccessResult(false);
     }
+
+
+    @PostMapping("/getType")
+    public Result getType(Integer ord) {
+        ErpCustomvalues record = new ErpCustomvalues();
+        record.setFieldsid(27);
+        record.setOrderid(ord);
+        ErpCustomvalues erpCustomvalues = erpCustomvaluesMapper.selectOne(record);
+        return ResultGenerator.genSuccessResult(erpCustomvalues.getFvalue());
+    }
+
 
 
     @PostMapping("/list")

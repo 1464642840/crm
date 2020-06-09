@@ -25,4 +25,6 @@ public interface TelMapper extends Mapper<Tel> {
 
     @Select(" select t.ord,t.name,(select erp.FValue from ERP_CustomValues erp where erp.OrderID=t.ord and erp.FieldsID=27) fenzu,(select erp.FValue from ERP_CustomValues erp where erp.OrderID=t.ord and erp.FieldsID=15) xin from tel t where ord=#{ord}")
     List<HashMap<String,Object>> selectByPrimaryKeyInfo(@Param("ord") Integer company);
+
+
 }
