@@ -202,7 +202,7 @@ public class Plan1Controller {
      */
     @CrossOrigin(origins = "*", maxAge = 3600)
     @PostMapping("/export")
-    public Result statistics(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) String ywyIds, @RequestParam String type, @RequestParam String bumen) throws ParseException {
+    public Result statistics(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) String ywyIds, @RequestParam(required = false) String custIds,@RequestParam String type, @RequestParam String bumen) throws ParseException {
         String url = "";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyy-MM-dd");
         Date sd = null;
@@ -216,7 +216,11 @@ public class Plan1Controller {
         }
 
         try {
-            url = plan1Service.doExport(sd, ed, ywyIds, type, bumen);
+            if(!StrUtils.isNull(ywyIds)) {
+                url = plan1Service.doExport(sd, ed, ywyIds, type, bumen);
+            }else if (!StrUtils.isNull(custIds)){
+                url = plan1Service.doExport2(sd, ed, custIds, type, bumen);
+            }
         } catch (ServiceException e) {
             return ResultGenerator.genFailResult(e.getMessage());
         }

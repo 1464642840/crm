@@ -14,10 +14,7 @@ import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tk.mybatis.mapper.entity.Condition;
 import tk.mybatis.mapper.entity.Example;
 
@@ -109,7 +106,7 @@ public class TelController {
         PageInfo pageInfo = new PageInfo(list);
         return ResultGenerator.genSuccessResult(pageInfo);
     }
-
+    @CrossOrigin(origins = "*",maxAge = 3600)
     @PostMapping("/custList")
     public Result custList(@RequestParam(defaultValue = "") String position, @RequestParam(defaultValue = "0") Long visitDate1, @RequestParam(defaultValue = "0") Long visitDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "") String custName, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
 

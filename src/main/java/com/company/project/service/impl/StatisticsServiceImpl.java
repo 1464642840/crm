@@ -49,6 +49,10 @@ public class StatisticsServiceImpl implements StatisticsService {
         //客户拜访记录
         List<Map<Object, Object>> visitList = new ArrayList<>();
 
+
+        //拿到业务员列表
+        List<String> ywyListS = new ArrayList<>();
+
         JSONArray dateByParam = new JSONArray();
         if ("塑料".equals(type)) {
             String[] fields = {"FSalerId.FName", "FPriceUnitQty"};
@@ -58,6 +62,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             dateByParam = ErpDataUtils.getDateByParam("SAL_SaleOrder", order, fields, condition);
 
             visitList = replyMapper.selectGroupByYwy(startDate, endDate, "2");
+            ywyListS = replyMapper.getYwyList("2");
 
         } else if ("钢材".equals(type)) {
             String[] fields = {"FSalerId.FName", "FPriceUnitQty"};
@@ -66,19 +71,13 @@ public class StatisticsServiceImpl implements StatisticsService {
             String order = "FDate desc";
             dateByParam = ErpDataUtils.getDateByParam("SAL_SaleOrder", order, fields, condition);
             visitList = replyMapper.selectGroupByYwy(startDate, endDate, "3");
+            ywyListS = replyMapper.getYwyList("3");
         }
         //1.得到每位销售员的销售数据
         JSONObject res = new JSONObject();
 
         final String SALECOUNKEY = "saleCount";
-        for (int i = 0; i < dateByParam.size(); i++) {
-            JSONArray jsonArray = dateByParam.getJSONArray(i);
-            String ywy = jsonArray.getString(0);
-            Double sl = jsonArray.getDouble(1) / 1000;
-            JSONObject ywyObj = res.containsKey(ywy) ? res.getJSONObject(ywy) : new JSONObject();
-            ywyObj.put(SALECOUNKEY, NumberUtils.add(sl, ywyObj.containsKey(SALECOUNKEY) ? ywyObj.getDouble(SALECOUNKEY) : 0));
-            res.put(ywy, ywyObj);
-        }
+
         //2.得到每个业务员的拜访量
 
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
@@ -88,9 +87,17 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         for (Map<Object, Object> o : visitList) {
 
+            Integer times = 0;
             String ywy = o.get("ywy").toString();
-            String isNew = o.get("is_new").toString();
-            Integer times = Integer.parseInt(o.get("times").toString());
+
+
+            String isNew = "1";
+            try {
+                times = Integer.parseInt(o.get("times").toString());
+                isNew = o.get("is_new").toString();
+            } catch (Exception e) {
+
+            }
 
 
             JSONObject ywyObj;
@@ -114,6 +121,34 @@ public class StatisticsServiceImpl implements StatisticsService {
             res.put(ywy, ywyObj);
 
         }
+
+
+        for (String ywyList : ywyListS) {
+            if (!res.containsKey(ywyList)) {
+                JSONObject ywyObj = new JSONObject();
+                ywyObj.put(SALECOUNKEY, 0);
+                ywyObj.put("newVisit", 0);
+                ywyObj.put("oldVisit", 0);
+                res.put(ywyList, ywyObj);
+            }
+
+        }
+        for (int i = 0; i < dateByParam.size(); i++) {
+            JSONArray jsonArray = dateByParam.getJSONArray(i);
+            String ywy = jsonArray.getString(0);
+            if (!res.containsKey(ywy)) {
+                continue;
+            }
+
+
+            Double sl = jsonArray.getDouble(1) / 1000;
+
+            JSONObject ywyObj = res.containsKey(ywy) ? res.getJSONObject(ywy) : new JSONObject();
+            ywyObj.put(SALECOUNKEY, NumberUtils.add(sl, ywyObj.containsKey(SALECOUNKEY) ? ywyObj.getDouble(SALECOUNKEY) : 0));
+            res.put(ywy, ywyObj);
+        }
+
+
         //对 res 的key(业务员)按照拜访总量统计
         Set<String> strings = res.keySet();
         List<String> ywyList = new ArrayList<>();
@@ -189,6 +224,8 @@ public class StatisticsServiceImpl implements StatisticsService {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         //1.获取根据客户数量
         List<Map<Object, Object>> visitList = new LinkedList<>();
+        //拿到业务员列表
+        List<String> ywyListS = new ArrayList<>();
         if ("塑料".equals(type)) {
             String[] fields = {"FSalerId.FName", "FCustId.FName"};
             String condition = "FDate>='" + sdf.format(startDate) + "' and FDate<= '" + sdf.format(endDate) + "' and FCustId.FName not in('第八元素环境技术有限公司','个人','合肥融达环境技术有限公司','期初资源调整','合肥圆融供应链管理有限公司','HONGKONG WINYOND CO.,LIMILED') and FPriceUnitQty>0.001  and   FSaleDeptId.Fname in('电商部-深圳中心','电商部-业务中心')";
@@ -197,6 +234,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             dateByParam = ErpDataUtils.getDateByParam("SAL_SaleOrder", order, fields, condition);
 
             visitList = replyMapper.selectVisitCountGroupByYwy(startDate, endDate, "2");
+            ywyListS = replyMapper.getYwyList("2");
 
         } else if ("钢材".equals(type)) {
             String[] fields = {"FSalerId.FName", "FCustId.FName"};
@@ -205,6 +243,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             String order = "FDate desc";
             dateByParam = ErpDataUtils.getDateByParam("SAL_SaleOrder", order, fields, condition);
             visitList = replyMapper.selectVisitCountGroupByYwy(startDate, endDate, "3");
+            ywyListS = replyMapper.getYwyList("3");
         }
 
         JSONObject res = new JSONObject();
@@ -217,6 +256,14 @@ public class StatisticsServiceImpl implements StatisticsService {
             object.put("visitCustomerCount", times);
             res.put(ywy, object);
         }
+        for (String ywyList : ywyListS) {
+            if (!res.containsKey(ywyList)) {
+                JSONObject ywyObj = new JSONObject();
+                ywyObj.put("visitCustomerCount", 0);
+                res.put(ywyList, ywyObj);
+            }
+
+        }
 
         //全部的销售数据
         JSONObject customerstatus = StatisticsUtils.getCUSTOMERSTATUS();
@@ -225,6 +272,9 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (int i = 0; i < dateByParam.size(); i++) {
             JSONArray jsonArray = dateByParam.getJSONArray(i);
             String ywy = jsonArray.getString(0);
+            if (!res.containsKey(ywy)) {
+                continue;
+            }
             String custName = jsonArray.getString(1);
             JSONObject object = res.containsKey(ywy) ? res.getJSONObject(ywy) : new JSONObject();
 
@@ -345,8 +395,15 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (Map<Object, Object> objectObjectMap : ywyList) {
             Object username = objectObjectMap.get("username");
             Object sorce = objectObjectMap.get("sorce");
+            Object del = objectObjectMap.get("del");
+            Object workPosition = objectObjectMap.get("workPosition");
+            if (sorce == null) {
+                continue;
+            }
             JSONObject obj = new JSONObject();
             obj.put("sorce", sorce);
+            obj.put("del", del);
+            obj.put("workPosition", workPosition);
             res.put(username.toString(), obj);
         }
 
@@ -437,10 +494,122 @@ public class StatisticsServiceImpl implements StatisticsService {
         }
 
 
+        Set<String> strings1 = res.keySet();
+        Object[] objects = strings1.toArray();
+        for (Object s : objects) {
+
+            JSONObject jsonObject = res.getJSONObject(s.toString());
+
+            Integer sorce = jsonObject.getIntValue("sorce");
+            Integer del = jsonObject.getIntValue("del");
+            int workPosition = jsonObject.getIntValue("workPosition");
+            int t_0 = 0;
+            int t_1 = 0;
+            int m_0 = 0;
+            int m_1 = 0;
+            int y_0 = 0;
+            int y_1 = 0;
+            try {
+
+            } catch (Exception e) {
+                t_0 = jsonObject.getJSONObject("today").getIntValue("0");
+            }
+            try {
+                t_1 = jsonObject.getJSONObject("today").getIntValue("1");
+            } catch (Exception e) {
+
+            }
+            try {
+                m_0 = jsonObject.getJSONObject("month").getIntValue("0");
+            } catch (Exception e) {
+
+            }
+            try {
+                m_1 = jsonObject.getJSONObject("month").getIntValue("1");
+            } catch (Exception e) {
+
+            }
+            try {
+                y_0 = jsonObject.getJSONObject("year").getIntValue("0");
+            } catch (Exception e) {
+
+            }
+            try {
+                y_1 = jsonObject.getJSONObject("year").getIntValue("1");
+            } catch (Exception e) {
+
+            }
+            if (sorce != 3 && sorce != 2) {
+
+                JSONObject object = res.containsKey("其他") ? res.getJSONObject("其他") : new JSONObject();
+
+                JSONObject mon1 = object.containsKey("month") ? object.getJSONObject("month") : new JSONObject();
+                mon1.put("0", m_0 + (mon1.containsKey("0") ? mon1.getIntValue("0") : 0));
+                mon1.put("1", m_1 + (mon1.containsKey("1") ? mon1.getIntValue("1") : 0));
+                JSONObject year1 = object.containsKey("year") ? object.getJSONObject("year") : new JSONObject();
+                year1.put("0", y_0 + (year1.containsKey("0") ? year1.getIntValue("0") : 0));
+                year1.put("1", y_1 + (year1.containsKey("1") ? year1.getIntValue("1") : 0));
+                JSONObject today1 = object.containsKey("today") ? object.getJSONObject("today") : new JSONObject();
+                today1.put("0", t_0 + (today1.containsKey("0") ? today1.getIntValue("0") : 0));
+                today1.put("1", t_1 + (today1.containsKey("1") ? today1.getIntValue("1") : 0));
+                object.put("sorce", 100);
+                object.put("today", today1);
+                object.put("year", year1);
+                object.put("month", mon1);
+                res.put("其他", object);
+
+                res.remove(s);
+            } else if (sorce == 3 && (del != 1 || workPosition == 903)) {
+                JSONObject object = res.containsKey("钢材其他") ? res.getJSONObject("钢材其他") : new JSONObject();
+
+                JSONObject mon1 = object.containsKey("month") ? object.getJSONObject("month") : new JSONObject();
+                mon1.put("0", m_0 + (mon1.containsKey("0") ? mon1.getIntValue("0") : 0));
+                mon1.put("1", m_1 + (mon1.containsKey("1") ? mon1.getIntValue("1") : 0));
+                JSONObject year1 = object.containsKey("year") ? object.getJSONObject("year") : new JSONObject();
+                year1.put("0", y_0 + (year1.containsKey("0") ? year1.getIntValue("0") : 0));
+                year1.put("1", y_1 + (year1.containsKey("1") ? year1.getIntValue("1") : 0));
+                JSONObject today1 = object.containsKey("today") ? object.getJSONObject("today") : new JSONObject();
+                today1.put("0", t_0 + (today1.containsKey("0") ? today1.getIntValue("0") : 0));
+                today1.put("1", t_1 + (today1.containsKey("1") ? today1.getIntValue("1") : 0));
+                object.put("sorce", 3);
+                object.put("today", today1);
+                object.put("year", year1);
+                object.put("month", mon1);
+                res.put("钢材其他", object);
+
+                res.remove(s);
+            } else if (sorce == 2 && (del != 1 || workPosition == 903)) {
+                JSONObject object = res.containsKey("塑料其他") ? res.getJSONObject("塑料其他") : new JSONObject();
+
+                JSONObject mon1 = object.containsKey("month") ? object.getJSONObject("month") : new JSONObject();
+                System.out.println(mon1);
+                System.out.println(m_0 + (mon1.containsKey("0") ? mon1.getIntValue("0") : 0));
+                System.out.println(m_1 + (mon1.containsKey("1") ? mon1.getIntValue("1") : 0));
+                mon1.put("0", m_0 + (mon1.containsKey("0") ? mon1.getIntValue("0") : 0));
+                mon1.put("1", m_1 + (mon1.containsKey("1") ? mon1.getIntValue("1") : 0));
+                JSONObject year1 = object.containsKey("year") ? object.getJSONObject("year") : new JSONObject();
+                year1.put("0", y_0 + (year1.containsKey("0") ? year1.getIntValue("0") : 0));
+                year1.put("1", y_1 + (year1.containsKey("1") ? year1.getIntValue("1") : 0));
+                JSONObject today1 = object.containsKey("today") ? object.getJSONObject("today") : new JSONObject();
+                today1.put("0", t_0 + (today1.containsKey("0") ? today1.getIntValue("0") : 0));
+                today1.put("1", t_1 + (today1.containsKey("1") ? today1.getIntValue("1") : 0));
+                object.put("sorce", 2);
+                object.put("today", today1);
+                object.put("year", year1);
+                object.put("month", mon1);
+                res.put("塑料其他", object);
+
+                res.remove(s);
+            }
+        }
+
+
+        System.out.println(res);
         //排序
         List<String> ywyNameList = new ArrayList<>();
         ywyNameList.addAll(res.keySet());
         System.out.println(ywyNameList);
+        System.out.println(res);
         Collections.sort(ywyNameList, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
@@ -449,6 +618,18 @@ public class StatisticsServiceImpl implements StatisticsService {
                 if (!o1Obj.getString("sorce").equals(o2Obj.getString("sorce"))) {
                     return o2Obj.getString("sorce").compareTo(o1Obj.getString("sorce"));
                 } else {
+
+                    if ("钢材其他".equals(o1)) {
+                        return 1;
+                    } else if ("钢材其他".equals(o2)) {
+                        return -1;
+                    }
+                    if ("塑料其他".equals(o1)) {
+                        return 1;
+                    } else if ("塑料其他".equals(o2)) {
+                        return -1;
+                    }
+
                     if ("沙金宝".equals(o1)) {
                         return -1;
                     } else if ("沙金宝".equals(o2)) {
@@ -490,7 +671,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     private String drawBaiFangExce(JSONObject res, List<String> ywyNameList, Date today) {
-
+        System.out.println(res.toString());
         File directory = new File("src/main/resources");
         String reportPath = null;
         try {
@@ -583,7 +764,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         startLine++;
 
         //塑料
-        for (int i = gannaIndex; i < ywyNameList.size(); i++) {
+        for (int i = gannaIndex; i < ywyNameList.size() - 1; i++) {
             String s = ywyNameList.get(i);
             JSONObject jsonObject = res.getJSONObject(s);
             JSONObject todays = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
@@ -614,7 +795,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
 
             startLine++;
-            if (i != ywyNameList.size() - 1) {
+            if (i != ywyNameList.size() - 2) {
                 sheet.insertRow(startLine);
                 sheet.copy(sheet.getCellRange(startLine - 1, 1, startLine - 1, 17), sheet.getCellRange(startLine, 1, startLine, 17), true);
             }
@@ -628,19 +809,55 @@ public class StatisticsServiceImpl implements StatisticsService {
             sheet.getCellRange(startLine, i).setFormula("=SUM(" + cc + "" + (gannaIndex + 4 + 1) + ":" + cc + "" + (startLine - 1) + ")");
         }
 
+
         sheet.getCellRange(gannaIndex + 4 + 1, 2, startLine - 1, 2).merge();
+
+
+        startLine++;
+        sheet.insertRow(startLine);
+        sheet.copy(sheet.getCellRange(startLine - 1, 1, startLine - 1, 17), sheet.getCellRange(startLine, 1, startLine, 17), true);
+        sheet.getCellRange(startLine, 2, startLine, 4).merge();
+
+
+        JSONObject jsonObject = res.getJSONObject("其他");
+        JSONObject todays = jsonObject.containsKey("today") ? jsonObject.getJSONObject("today") : new JSONObject();
+        JSONObject month = jsonObject.containsKey("month") ? jsonObject.getJSONObject("month") : new JSONObject();
+        JSONObject year = jsonObject.containsKey("year") ? jsonObject.getJSONObject("year") : new JSONObject();
+        //姓名
+        sheet.getCellRange(startLine, 2).setText("其他部门小计");
+        //当天老客户
+        sheet.getCellRange(startLine, 5).setNumberValue(todays.containsKey("0") ? todays.getIntValue("0") : 0);
+        //当天新客户
+        sheet.getCellRange(startLine, 6).setNumberValue(todays.containsKey("1") ? todays.getIntValue("1") : 0);
+        //当天合计
+        sheet.getCellRange(startLine, 7).setFormula("=SUM(E" + startLine + ":F" + startLine + ")");
+
+        //当月老客户
+        sheet.getCellRange(startLine, 8).setNumberValue(month.containsKey("0") ? month.getIntValue("0") : 0);
+        //当月新客户
+        sheet.getCellRange(startLine, 9).setNumberValue(month.containsKey("1") ? month.getIntValue("1") : 0);
+        //当月合计
+        sheet.getCellRange(startLine, 10).setFormula("=SUM(H" + startLine + ":I" + startLine + ")");
+
+        //当年老客户
+        sheet.getCellRange(startLine, 11).setNumberValue(year.containsKey("0") ? year.getIntValue("0") : 0);
+        //当年新客户
+        sheet.getCellRange(startLine, 12).setNumberValue(year.containsKey("1") ? year.getIntValue("1") : 0);
+        //当年合计
+        sheet.getCellRange(startLine, 13).setFormula("=SUM(K" + startLine + ":L" + startLine + ")");
+
 
         startLine++;
 
         //算出公司合计
         for (int i = 5; i <= 13; i++) {
             char cc = (char) ('A' + i - 1);
-            sheet.getCellRange(startLine, i).setFormula("=" + cc + "" + (gannaIndex + 4) + "+" + cc + "" + (startLine - 1));
+            sheet.getCellRange(startLine, i).setFormula("=" + cc + "" + (gannaIndex + 4) + "+" + cc + "" + (startLine - 1) + "+" + cc + "" + (startLine - 2));
         }
 
 
         workbook.calculateAllValue();
-        String fileName = "合肥圆融"+instance.get(Calendar.YEAR)+"年" + mon + "月客户拜访记录总表.xlsx" + "VVV" + UUID.randomUUID().toString();
+        String fileName = "合肥圆融" + instance.get(Calendar.YEAR) + "年" + mon + "月客户拜访记录总表.xlsx" + "VVV" + UUID.randomUUID().toString();
         workbook.saveToFile("E:/springboot/" + fileName);
         return fileName;
     }

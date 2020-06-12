@@ -25,5 +25,7 @@ public interface Plan1Service extends Service<Plan1> {
     Plan1 upDatePlan1OneKey(Plan1 plan1, Long nowDate, String name, String name2, Integer replyId);
 
 
-    String doExport(Date sd, Date ed, String ids, String ywyIds, String type);
+    String doExport(Date sd, Date ed, String ywyIds, String custIds, String type);
+
+    String doExport2(Date sd, Date ed, String custIds, String type, String bumen);
 }

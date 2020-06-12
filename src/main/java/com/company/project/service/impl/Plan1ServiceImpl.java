@@ -596,6 +596,137 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
         return zipFileName;
     }
 
+    @Override
+    public String doExport2(Date startDate, Date endDate, String custIds, String type, String bumen) {
+        ThreadPoolExecutor instance = MyThread.getInstance();
+        String[] split = custIds.split(",");
+        List<Integer> ids = new ArrayList<>();
+        List<File> zipList = new ArrayList<>();
+
+
+        File directory = new File("src/main/resources");
+        String reportPath = null;
+        try {
+            reportPath = directory.getCanonicalPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        File f = new File(reportPath + "/file/xxx-合肥圆融供应链管理有限公司拜访记录表.xlsx");
+
+
+        final int[] allCount = {0};
+        for (String s : split) {
+
+            instance.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(startDate);
+                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) - 3);
+                    Date colseThreeMonth = calendar.getTime();
+                    List<HashMap<String, Object>> data = plan1Mapper.selectDateExport2(Integer.parseInt(s), startDate, endDate, colseThreeMonth,bumen);
+                    synchronized (this) {
+                        allCount[0] += data.size();
+                    }
+                    JSONObject res = new JSONObject();
+                    //用作去重
+                    HashSet<String> hashSet = new HashSet<>();
+                    for (HashMap<String, Object> datum : data) {
+                        String cateid = datum.get("cateid").toString();
+                        String date7 = datum.get("date7").toString().substring(0, 10);
+                        String companyName = datum.get("companyName").toString();
+                        String intro = datum.get("intro").toString();
+                        String intro2 = datum.get("intro2").toString();
+                        String others = datum.containsKey("others") ? datum.get("others").toString() : "";
+                        if (!hashSet.add(intro + companyName + date7)) {
+                            continue;
+                        }
+                        JSONObject ywyObj = res.containsKey(cateid) ? res.getJSONObject(cateid) : new JSONObject();
+                        JSONObject companyObj = ywyObj.containsKey(companyName) ? ywyObj.getJSONObject(companyName) : new JSONObject();
+                        companyObj.put("info", datum);
+                        JSONArray baifangArr = companyObj.containsKey("baifang") ? companyObj.getJSONArray("baifang") : new JSONArray();
+                        JSONObject object = JSONObject.parseObject(intro);
+                        object.put("date", date7);
+                        object.put("intro2", intro2);
+                        object.put("others", others);
+                        baifangArr.add(object);
+                        companyObj.put("baifang", baifangArr);
+                        ywyObj.put(companyName, companyObj);
+                        res.put(cateid, ywyObj);
+
+                    }
+                    try {
+                        drawBaifangExcel(res, zipList);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        instance.shutdown();
+        //等待完成
+        try {
+            instance.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+        if (allCount[0] == 0) {
+            for (File file : zipList) {
+                file.delete();
+            }
+            throw new ServiceException("查询条件暂无拜访记录");
+        }
+
+        String zipFileName = "";
+        if ("zip".equals(type)) {
+            String endDateString = new SimpleDateFormat("yyyy年M月d日").format(new Date(endDate.getTime() - 3600 * 24 * 1000));
+            zipFileName = endDateString + bumen + "部拜访统计.zip" + "VVV" + UUID.randomUUID().toString();
+            try {
+                ZipUtils.toZip(zipList, new FileOutputStream((new File(path + "/" + zipFileName))));
+                for (File file : zipList) {
+                    file.delete();
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+        } else if ("pdf".equals(type)) {
+            String endDateString = new SimpleDateFormat("yyyy年M月d日").format(new Date(endDate.getTime() - 3600 * 24 * 1000));
+            zipFileName = endDateString + bumen + "部拜访统计记录.pdf" + "VVV" + UUID.randomUUID().toString();
+            PDFMergerUtility mergePdf = new PDFMergerUtility();
+            mergePdf.setDestinationFileName(path + "/" + zipFileName);
+            ArrayList<String> fileList = new ArrayList<>();
+            for (File file : zipList) {
+                String path0 = path + "/" + UUID.randomUUID().toString() + ".pdf";
+                Excel2PDF.excel2pdf(file.getAbsolutePath(), path0);
+                mergePdf.addSource(path0);
+                fileList.add(path0);
+                file.delete();
+
+            }
+            try {
+                mergePdf.mergeDocuments();
+                PDFUtils.addPageNum(path + "/" + zipFileName, path + "/" + zipFileName + "_1");
+
+                new File(path + "/" + zipFileName).delete();
+                zipFileName += "_1";
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (COSVisitorException e) {
+                e.printStackTrace();
+            } finally {
+                for (String s : fileList) {
+                    new File(s).delete();
+                }
+            }
+
+        }
+        return zipFileName;
+    }
+
 
     public void drawBaifangExcel(JSONObject res, List<File> zipList) throws FileNotFoundException {
 

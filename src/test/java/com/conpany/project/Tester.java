@@ -83,29 +83,44 @@ public class Tester {
 
     @Test
     public void fullPosition() {
-        List<Tel> all = telService.findAll();
+       // List<Tel> all = telService.findAll();
+        List<Tel> all = telService.findByIds("3694");
         ThreadPoolExecutor instance = MyThread.getInstance();
         for (Tel tel : all) {
+            System.out.println(tel.getOrd());
             String address = StrUtils.clearAllSymbol(tel.getAddress());
             if (StrUtils.isNull(address)) {
                 continue;
             }
+            if(instance.getQueue().size()>1000){
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             instance.execute(new Runnable() {
                 @Override
                 public void run() {
-                    System.out.println(address);
-                    String geocoderLatitude = GaodeUtils.getGeocoderLatitude(address);
-                    String[] split = geocoderLatitude.split(",");
-                    tel.setLng(new BigDecimal(split[0]));
-                    tel.setLat(new BigDecimal(split[1]));
-                    telService.updateSelective(tel);
+                   try {
+
+                       String geocoderLatitude = GaodeUtils.getGeocoderLatitude(address);
+                       String[] split = geocoderLatitude.split(",");
+                       tel.setLng(new BigDecimal(split[0]));
+                       tel.setLat(new BigDecimal(split[1]));
+                       telService.updateSelective(tel);
+                   }catch (Exception e){
+                       e.printStackTrace();
+                   }
                 }
             });
 
         }
 
+
+
         try {
-            instance.awaitTermination(200, TimeUnit.SECONDS);
+            instance.awaitTermination(2000, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -107,7 +107,7 @@
     <result column="sessionData" jdbcType="LONGNVARCHAR" property="sessiondata" />
   </resultMap>
     <select id="selectSlGandGcywy" resultType="java.util.Map">
-            select  distinct username,sorce from gate where del=1 and sorce in(2,3) and workPosition!=903
+            select  distinct username,sorce,del,workPosition from gate where username is not null and username !=''
 
     </select>
 </mapper>

@@ -226,6 +226,77 @@
 
 
     </select>
+
+
+
+
+    <select id="selectDateExport2" resultType="java.util.HashMap">
+
+
+        select
+        pl.cateid,
+        ry.name ywy,
+        pl.others,
+        pl.date7,
+        t.name companyName,
+        pl.intro intro,
+        pl.intro2 intro2,
+        g.sorce sorce,
+        (select FValue from ERP_CustomValues where FieldsID=17 and OrderID=t.ord) yzjyl,
+        (select FValue from ERP_CustomValues where FieldsID=16 and OrderID=t.ord) companyPersonNum,
+        (select FValue from ERP_CustomValues where FieldsID=34 and OrderID=t.ord) companyGuimo,
+        (select FValue from ERP_CustomValues where FieldsID=15 and OrderID=t.ord) isNew,
+        (select FValue from ERP_CustomValues where FieldsID=27 and OrderID=t.ord) leixing,
+        (select FValue from ERP_CustomValues where FieldsID=24 and OrderID=t.ord) wshz,
+
+        pl.address,
+        p.sex linkSex,
+        p.name linkName,
+        p.msn linkHobby,
+        p.mobile,
+        t.product shangyou,
+        t.c2 xiayou,
+        t.c3 qita,
+        p.job linkManJob
+        from plan1 pl
+        left join reply ry on ry.plan1 = pl.ord
+        left join tel t on t.ord=pl.company
+        left join person p on p.ord=pl.person
+        left join gate g on g.ord = pl.cateid
+        where  pl.company in (
+        select company from plan1 pl2
+        where
+        pl2.company = #{id}
+        <if test="startDate!=null">
+            and pl2.date7 >= #{startDate}
+        </if>
+        <if test="endDate!=null">
+            and pl2.date7 &lt; #{endDate}
+        </if>
+
+        )
+        <if test="bumen=='塑料'">
+            and g.sorce=2
+        </if>
+        <if test="bumen=='钢材'">
+            and g.sorce=3
+        </if>
+        <if test="closeThree!=null">
+            and pl.date7 >= #{closeThree}
+        </if>
+        order by pl.date7 desc
+
+
+    </select>
+
+
+
+
+
+
+
+
+
     <select id="getGroupByYwy" resultType="java.util.Map">
        SELECT
       g.name,
