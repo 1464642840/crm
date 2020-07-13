@@ -2,10 +2,7 @@ package com.company.project.configurer;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +16,7 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.company.project.core.Result;
 import com.company.project.core.ResultCode;
 import com.company.project.core.ServiceException;
+import com.company.project.utils.string.StrUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
@@ -68,6 +67,8 @@ public class WebMvcConfigurer extends WebMvcConfigurerAdapter {
     public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
         exceptionResolvers.add(new HandlerExceptionResolver() {
             public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception e) {
+                Map<String, String[]> parameterMap = request.getParameterMap();
+                System.out.println("异常参数: "+StrUtils.mapToString(parameterMap));
                 Result result = new Result();
                 if (e instanceof ServiceException) {//业务失败的异常，如“账号或密码错误”
                     result.setCode(ResultCode.FAIL).setMessage(e.getMessage());

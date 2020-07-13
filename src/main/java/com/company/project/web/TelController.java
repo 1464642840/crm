@@ -10,6 +10,7 @@ import com.company.project.model.ErpCustomvalues;
 import com.company.project.model.Tel;
 import com.company.project.service.GateService;
 import com.company.project.service.TelService;
+import com.company.project.utils.date.DateUtils;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -98,7 +99,6 @@ public class TelController {
     }
 
 
-
     @PostMapping("/list")
     public Result list(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "0") Integer size) {
         PageHelper.startPage(page, size);
@@ -106,7 +106,8 @@ public class TelController {
         PageInfo pageInfo = new PageInfo(list);
         return ResultGenerator.genSuccessResult(pageInfo);
     }
-    @CrossOrigin(origins = "*",maxAge = 3600)
+
+    @CrossOrigin(origins = "*", maxAge = 3600)
     @PostMapping("/custList")
     public Result custList(@RequestParam(defaultValue = "") String position, @RequestParam(defaultValue = "0") Long visitDate1, @RequestParam(defaultValue = "0") Long visitDate2, @RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "") String custName, @RequestParam(defaultValue = "0") Long createDate1, @RequestParam(required = false) String businessType, @RequestParam(defaultValue = "0") Long createDate2, @RequestParam(defaultValue = "0") Double lng, @RequestParam(defaultValue = "0") Double lat, @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "name") String order, @RequestParam(defaultValue = "5") Integer size, @RequestParam(defaultValue = "") String ywy) {
 
@@ -125,13 +126,18 @@ public class TelController {
                 map.put("createDate1", sdf.format(new Date(createDate1))); //开始创建时间
             }
             if (createDate2 != 0) {
-                map.put("createDate2", sdf.format(new Date(createDate2 + 3600 * 24 * 1000))); //结束创建时间
+                map.put("createDate2", sdf.format(new Date(createDate2 + 3600 * 24 * 1000 - 1))); //结束创建时间
             }
             if (visitDate1 != 0) {
+                if (1340172154000L==visitDate1){
+                    map.put("cwgj",true);
+                }
                 map.put("visitDate1", sdf.format(new Date(visitDate1))); //开始拜访时间
+                map.put("wgjsc1", DateUtils.daysBetween(new Date(), new Date(visitDate1)));
             }
             if (visitDate2 != 0) {
-                map.put("visitDate2", sdf.format(new Date(visitDate2 + 3600 * 24 * 1000))); //结束创建时间
+                map.put("visitDate2", sdf.format(new Date(visitDate2 + 3600 * 24 * 1000 - 1))); //结束拜访时间
+                map.put("wgjsc2", DateUtils.daysBetween(new Date(), new Date(visitDate2)));
             }
         } catch (Exception e) {
             return ResultGenerator.genFailResult("日期格式有误");
@@ -169,13 +175,14 @@ public class TelController {
 
         List<Tel> list = new ArrayList<>();
         try {
-            list=telService.findByMyCondition(map);
+            list = telService.findByMyCondition(map);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResultGenerator.genFailResult(e.getMessage());
         }
         PageInfo pageInfo = new PageInfo(list);
 
-        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile", "businessType", "isHisCustomer"};
+        String[] fileds = {"ord", "khid", "name", "address", "person_name", "mobile", "businessType", "isHisCustomer", "ywyList"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Tel.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);

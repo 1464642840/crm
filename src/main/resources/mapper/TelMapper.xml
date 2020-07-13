@@ -170,6 +170,8 @@
         t.ord,
         t.khid,
         t.name,
+        t.cateid,
+        t.share,
         t.address,
         t.person,
         p.name person_name,
@@ -198,6 +200,7 @@
 
         <if test="ywy!=null">
             and (g.username = #{ywy} or CHARINDEX(#{cateid},t.share) > 0)
+
         </if>
         <if test="sorce!=null">
             and g.sorce=#{sorce}
@@ -218,15 +221,9 @@
         </if>
         ))
 
-        <if test="visitDate1!=null">
-            and pl.date7>=#{visitDate1}
-        </if>
-        <if test="visitDate2!=null">
-            and pl.date7&lt;=#{visitDate2}
-        </if>
 
         <if test="custName!=null">
-            and t.name&lt;=#{custName}
+            and t.name=#{custName}
         </if>
         AND t.name IS NOT NULL
         AND (p.del = 1 or p.del is null)
@@ -244,13 +241,45 @@
         <if test="createDate2!=null">
             and t.date1&lt;=#{createDate2}
         </if>
+        <if test="cwgj==true">
+            and t.ord not in(
+            select plan1.company
+            from plan1
+            where plan1.date7 >= #{visitDate1} and plan1.date7&lt;#{visitDate2} and plan1.company is not null
+            )
+        </if>
+
+        <if test="cwgj!=true &amp;&amp; (wgjsc1!=null || wgjsc2!=null)" >
+            and t.ord in(
+
+            select temp.ord from (select plan1.company ord,MAX(date7) as max_date from
+             plan1 where company is not null
+
+            <if test="ywy!=null">
+                and plan1.cateid=#{cateid}
+
+            </if>
+
+             group by company) as temp
+             where 1=1
+            <if test="wgjsc2!=null">
+                and DATEDIFF(day,max_date,GETDATE())>=#{wgjsc2}
+            </if>
+
+            <if test="wgjsc1!=null">
+                and DATEDIFF(day,max_date,GETDATE()) &lt;=#{wgjsc1}
+            </if>
+            )
+
+        </if>
+
 
 
         <if test="order.equals('name')">
-            order by t.pym ,t.name
+            order by isHisCustomer desc, t.pym ,t.name
         </if>
         <if test="order.equals('distance')">
-            order by juli,t.name
+            order by isHisCustomer desc, juli,t.pym,t.name
         </if>
     </select>
 
@@ -336,7 +365,7 @@
             CHARINDEX(#{cateid},t.share)>0) or (convert(nvarchar(255),erp.FValue)='供应商'
             ))
         </if>
-        <if test="sorce!=2 &amp;&amp; sorce!=3">
+        <if test="sorce!=2 &amp;&amp; sorce!=3 &amp;&amp; sorce!=null ">
             and (e.FValue='公用' or e.FValue is null or g.ord=#{cateid} or
             CHARINDEX(#{cateid},t.share)>0 or (convert(nvarchar(255),erp.FValue)='供应商'))
         </if>
@@ -349,7 +378,7 @@
 
 
         <if test="custName!=null">
-            and t.name&lt;=#{custName}
+            and t.name=#{custName}
         </if>
         AND t.name IS NOT NULL
         AND (p.del = 1 or p.del is null)

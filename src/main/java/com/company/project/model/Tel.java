@@ -101,6 +101,8 @@ public class Tel {
 
     private Date datealt;
 
+
+
     @Column(name = "bank_1")
     private String bank_1;
 
@@ -1170,6 +1172,14 @@ public class Tel {
         this.businessType = businessType;
     }
 
+    @Transient
+    private String ywyList="";
 
+    public String getYwyList() {
+        return ywyList;
+    }
 
+    public void setYwyList(String ywyList) {
+        this.ywyList = ywyList;
+    }
 }

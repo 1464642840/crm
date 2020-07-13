@@ -28,4 +28,6 @@ public interface Plan1Service extends Service<Plan1> {
     String doExport(Date sd, Date ed, String ywyIds, String custIds, String type);
 
     String doExport2(Date sd, Date ed, String custIds, String type, String bumen);
+
+    List<Plan1> getAllRecord(Integer id);
 }

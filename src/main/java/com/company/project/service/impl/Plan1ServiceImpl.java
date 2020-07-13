@@ -8,10 +8,8 @@ import com.company.project.dao.ErpCustomvaluesMapper;
 import com.company.project.dao.Plan1Mapper;
 import com.company.project.dao.ReplyMapper;
 import com.company.project.dao.TelMapper;
-import com.company.project.model.ErpCustomvalues;
-import com.company.project.model.Gate;
-import com.company.project.model.Plan1;
-import com.company.project.model.Reply;
+import com.company.project.model.*;
+import com.company.project.service.DianpingService;
 import com.company.project.service.GateService;
 import com.company.project.service.Plan1Service;
 import com.company.project.core.AbstractService;
@@ -29,6 +27,7 @@ import com.spire.xls.packages.sprtFC;
 import lombok.SneakyThrows;
 import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.util.PDFMergerUtility;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -596,6 +595,9 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
         return zipFileName;
     }
 
+    @Autowired
+    private DianpingService dianpingService;
+
     @Override
     public String doExport2(Date startDate, Date endDate, String custIds, String type, String bumen) {
         ThreadPoolExecutor instance = MyThread.getInstance();
@@ -624,7 +626,7 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
                     calendar.setTime(startDate);
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) - 3);
                     Date colseThreeMonth = calendar.getTime();
-                    List<HashMap<String, Object>> data = plan1Mapper.selectDateExport2(Integer.parseInt(s), startDate, endDate, colseThreeMonth,bumen);
+                    List<HashMap<String, Object>> data = plan1Mapper.selectDateExport2(Integer.parseInt(s), startDate, endDate, colseThreeMonth, bumen);
                     synchronized (this) {
                         allCount[0] += data.size();
                     }
@@ -725,6 +727,79 @@ public class Plan1ServiceImpl extends AbstractService<Plan1> implements Plan1Ser
 
         }
         return zipFileName;
+    }
+
+    @Override
+    public List<Plan1> getAllRecord(Integer id) {
+        List<Plan1> list = new ArrayList<>();
+        Plan1 plan1 = plan1Mapper.selectByPrimaryKey(id);
+        //找出评论
+        plan1.setDianpingList(findDianPingByPlanId(id));
+
+        list.add(plan1);
+        //1.主拜访人员
+        try {
+            Integer compnayId = plan1.getCompany();
+            if (plan1.getIsPeitong() == 1 && !StrUtils.isNull(plan1.getOthers())) {
+
+                //根据公司id和最近三天查询有没有陪同
+                Condition c = new Condition(Plan1.class);
+                Example.Criteria criteria = c.createCriteria();
+                criteria.andEqualTo("company", compnayId);
+                criteria.andLessThan("date7", new Date(plan1.getDate7().getTime() + 3600 * 24 * 1000 * 2));
+                criteria.andGreaterThan("date7", new Date(plan1.getDate7().getTime() - 3600 * 24 * 1000 * 2));
+                criteria.andEqualTo("isPeitong", 0);
+                List<Plan1> plan1s = plan1Mapper.selectByCondition(c);
+                if (!CollectionUtils.isEmpty(plan1s)) {
+                    JSONArray array = JSONArray.parseArray(plan1.getIntro2());
+                    for (Plan1 plan11 : plan1s) {
+                        plan11.setDianpingList(findDianPingByPlanId(plan11.getOrd()));
+                        list.add(plan11);
+                    }
+
+                }
+                //陪同人员
+            } else if (plan1.getIsPeitong() == 0) {
+                String name = gateService.findById(plan1.getCateid()).getUsername();
+                Condition c = new Condition(Plan1.class);
+                Example.Criteria criteria = c.createCriteria();
+                criteria.andEqualTo("company", compnayId);
+                criteria.andLessThan("date7", new Date(plan1.getDate7().getTime() + 3600 * 24 * 1000 * 2));
+                criteria.andGreaterThan("date7", new Date(plan1.getDate7().getTime() - 3600 * 24 * 1000 * 2));
+                criteria.andEqualTo("isPeitong", 1);
+                List<Plan1> plan1s = plan1Mapper.selectByCondition(c);
+                if (!CollectionUtils.isEmpty(plan1s)) {
+                    for (Plan1 plan11 : plan1s) {
+                        if (plan11.getOthers().contains(name)) {
+                            plan11.setDianpingList(findDianPingByPlanId(plan11.getOrd()));
+                            list.add(plan11);
+                        }
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("关联陪同人员失败");
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * @param id 根据拜访id获得点评列表
+     * @return
+     */
+    private List<Dianping> findDianPingByPlanId(Integer id) {
+        try {
+            Condition condition = new Condition(Dianping.class);
+            Example.Criteria criteria = condition.createCriteria();
+            criteria.andEqualTo("ord", id);
+            condition.setOrderByClause("id desc");
+            List<Dianping> dianPingList = dianpingService.findByCondition(condition);
+            return dianPingList;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 

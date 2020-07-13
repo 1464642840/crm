@@ -64,8 +64,8 @@ public class DateUtils {
      **/
     public static String getWeekStart() {
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.WEEK_OF_MONTH, 0);
-        cal.set(Calendar.DAY_OF_WEEK, 2);
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
         Date time = cal.getTime();
         return new SimpleDateFormat("yyyy-MM-dd").format(time) + " 00:00:00";
     }
@@ -197,7 +197,32 @@ public class DateUtils {
     }
 
 
+    /**
+     * 计算两个日期间隔的天数
+     * @param smdate
+     * @param bdate
+     * @return
+     * @throws ParseException
+     */
+    public static int daysBetween(Date smdate,Date bdate) throws ParseException
 
+    {
+
+        Calendar cal = Calendar.getInstance();
+
+        cal.setTime(smdate);
+
+        long time1 = cal.getTimeInMillis();
+
+        cal.setTime(bdate);
+
+        long time2 = cal.getTimeInMillis();
+
+        long between_days=(time2-time1)/(1000*3600*24);
+
+        return Math.abs(Integer.parseInt(String.valueOf(between_days)));
+
+    }
 
 
 }

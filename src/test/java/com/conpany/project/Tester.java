@@ -13,6 +13,7 @@ import com.company.project.model.Reply;
 import com.company.project.model.Tel;
 import com.company.project.service.*;
 import com.company.project.utils.position.GaodeUtils;
+import com.company.project.utils.redis.RedisUtils;
 import com.company.project.utils.string.StrUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +53,9 @@ public class Tester {
     private ReplyMapper replyMapper;
     @Autowired
     private GateMapper gateMapper;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     @Autowired
     StatisticsService statisticsService;
@@ -232,8 +236,11 @@ public class Tester {
         }
     }
 
+    @Test
+    public void redisTest() {
+        redisUtils.add("2",2);
 
-
+    }
 
 
 }

@@ -10,8 +10,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -440,7 +439,7 @@ public class StrUtils {
      * */
 
     public static String clearAllSymbol(String source) {
-        if(StrUtils.isNull(source)){
+        if (StrUtils.isNull(source)) {
             return "";
         }
         String regEx = "[\n`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。， 、？\r\t]";
@@ -456,6 +455,32 @@ public class StrUtils {
         String newString = m.replaceAll(aa).trim();
         return newString;
 
+    }
+
+    /**
+     * 15      * map转换为string
+     * 16      * @param map
+     * 17      * @return
+     * 18
+     */
+    public static String mapToString(Map<String, String[]> map) {
+        Set<String> keySet = map.keySet();
+        //将set集合转换为数组
+        String[] keyArray = keySet.toArray(new String[keySet.size()]);
+        //给数组排序(升序)
+        Arrays.sort(keyArray);
+        //因为String拼接效率会很低的，所以转用StringBuilder
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < keyArray.length; i++) {
+            // 参数值为空，则不参与签名 这个方法trim()是去空格
+            if ((String.valueOf(map.get(keyArray[i]))).trim().length() > 0) {
+                sb.append(keyArray[i]).append(":").append(String.valueOf(Arrays.toString(map.get(keyArray[i]))).trim());
+            }
+            if (i != keyArray.length - 1) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
     }
 
     public static void main(String args[]) {

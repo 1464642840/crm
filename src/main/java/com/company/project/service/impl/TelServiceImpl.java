@@ -1,5 +1,7 @@
 package com.company.project.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPObject;
 import com.company.project.core.ServiceException;
 import com.company.project.dao.ErpCustomvaluesMapper;
 import com.company.project.dao.TelMapper;
@@ -18,6 +20,7 @@ import tk.mybatis.mapper.entity.Condition;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
 import java.util.*;
 
 
@@ -32,6 +35,8 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
     private ErpCustomvaluesMapper erpCustomvaluesMapper;
     @Resource
     private GateService gateService;
+
+    final String[] MANANGERPOTION = {"总经理", "风控", "部门长", "综合主管"};
 
     @Override
     public List<Tel> findByMyCondition(Map map) {
@@ -65,11 +70,75 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
             }
 
             PageHelper.startPage(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
-            return telMapper.findByMyCondition(map);
+            List<Tel> byMyCondition = telMapper.findByMyCondition(map);
+
+            //判断当前是不是管理级别,是就把公司对应的业务员和被共享的人查询来
+            if (Arrays.asList(MANANGERPOTION).contains(position)) {
+                Set<String> telCateidList = new HashSet<>();
+                for (Tel tel : byMyCondition) {
+                    String share = tel.getShare()==null?"":tel.getShare().trim();
+                    String cateid = tel.getCateid()==null?"":tel.getCateid().toString().trim();
+                    if (!StrUtils.isNull(cateid)) {
+                        telCateidList.add(cateid);
+                    }
+                    if (!StrUtils.isNull(share)) {
+                        for (String s : share.split(",")) {
+                            try {
+                                telCateidList.add(s);
+                            } catch (Exception e) {
+                                continue;
+                            }
+
+                        }
+
+                    }
+                }
+                //2.去数据库拿到这些cateid对应的人员
+                if(telCateidList.size()>0) {
+                    List<Gate> byIds = gateService.findByIds(StrUtils.join(telCateidList.toArray(), ","));
+                    //将人员放进map中,key为id,值为姓名
+                    JSONObject obj = new JSONObject();
+                    for (Gate byId : byIds) {
+                        obj.put(byId.getOrd().toString(), byId.getUsername());
+                    }
+
+                    //3.将查询的用户列表添加进业务员列表中
+                    for (Tel tel : byMyCondition) {
+                        if ("供应商".equals(tel.getBusinessType())) {
+                            continue;
+                        }
+                        Set<String> ywyList = new LinkedHashSet<>();
+                        String share = tel.getShare() == null ? "" : tel.getShare().trim();
+                        String cateid = tel.getCateid() == null ? "" : tel.getCateid().toString().trim();
+                        if (obj.containsKey(cateid)) {
+                            ywyList.add(obj.getString(cateid));
+                        }
+                        if (!StrUtils.isNull(share)) {
+                            for (String s : share.split(",")) {
+                                if (obj.containsKey(s)) {
+                                    ywyList.add(obj.getString(s));
+                                }
+
+                            }
+                        }
+
+                        tel.setYwyList(StrUtils.join(ywyList.toArray(), " "));
+
+                    }
+                }
+
+
+            }
+
+
+            return byMyCondition;
             //拜访时搜索客户列表
         } else {
             Integer sorce = by.getSorce();
             map.put("sorce", sorce);
+            if(Arrays.asList(MANANGERPOTION).contains(map.get("position"))){
+                map.remove("sorce");
+            }
             PageHelper.startPage(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
             return telMapper.findByBaiFangCustList(map);
         }
@@ -78,6 +147,15 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
     @Override
     public void updateCustInfo(Tel tel, Map<String, String[]> parameterMap) {
 
+        
+        //获取类的所有字段
+        Class<Tel> telClass = Tel.class;
+        Field[] declaredFields = telClass.getDeclaredFields();
+        List<String> telFileNames = new ArrayList<>();
+        for (Field declaredField : declaredFields) {
+            telFileNames.add(declaredField.getName());
+
+        }
 
         HashMap<String, String> map = new HashMap<>();
         HashMap<String, String> map1 = new HashMap<>();
@@ -88,7 +166,7 @@ public class TelServiceImpl extends AbstractService<Tel> implements TelService {
 
             String key = (String) iterator.next();
             if (!key.startsWith("@")) {
-                if (!"ord".equals(key)) {
+                if (!"ord".equals(key)&&telFileNames.contains(key)) {
                     baseParamCount++;
                 }
             } else if (key.contains("_")) {

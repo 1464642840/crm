@@ -9,8 +9,7 @@ import com.company.project.core.Result;
 import com.company.project.core.ResultGenerator;
 import com.company.project.core.ServiceException;
 import com.company.project.model.*;
-import com.company.project.service.PersonService;
-import com.company.project.service.Plan1Service;
+import com.company.project.service.*;
 import com.company.project.utils.date.DateUtils;
 import com.company.project.utils.string.StrUtils;
 import com.github.pagehelper.PageHelper;
@@ -19,6 +18,8 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import tk.mybatis.mapper.entity.Condition;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -39,9 +40,15 @@ import java.util.*;
 public class Plan1Controller {
     @Resource
     private Plan1Service plan1Service;
-    @Autowired
+
     @Resource
     PersonService personService;
+
+    @Autowired
+    private GateService gateService;
+
+    @Autowired
+    private DianpingService dianpingService;
 
 
     @PostMapping("/add")
@@ -61,6 +68,7 @@ public class Plan1Controller {
             Plan1 plan11 = plan1Service.upDatePlan1OneKey(plan1, nowDate, name, name2, replyId);
             return ResultGenerator.genSuccessResult(plan11.getOrd());
         } catch (ServiceException e) {
+            e.printStackTrace();
             return ResultGenerator.genFailResult(e.getMessage());
         }
 
@@ -77,6 +85,49 @@ public class Plan1Controller {
     public Result update(Plan1 plan1) {
         plan1Service.update(plan1);
         return ResultGenerator.genSuccessResult();
+    }
+
+    @Autowired
+    private TagsService tagsService;
+
+    @PostMapping("/details")
+    public Result details(@RequestParam Integer id, @RequestParam(required = false) String person) {
+
+
+        List<Plan1> list = plan1Service.getAllRecord(id);
+
+
+        for (int i = 0; i < list.size(); i++) {
+            Plan1 plan1 = list.get(i);
+
+            //查询这个人是否给这条记录点赞
+            plan1.setSelfTag(0);
+            if (!StrUtils.isNull(person)) {
+                Condition c = new Condition(Tags.class);
+                Example.Criteria criteria = c.createCriteria();
+                criteria.andEqualTo("person", person);
+                criteria.andEqualTo("plan1", plan1.getOrd());
+
+                List<Tags> byCondition = tagsService.findByCondition(c);
+                if (!CollectionUtils.isEmpty(byCondition)) {
+                    plan1.setSelfTag(1);
+                }
+            }
+
+            //查询联系人的信息和用户名
+            plan1.setUsername(gateService.findById(plan1.getCateid()).getUsername());
+            if (plan1.getPerson() != null) {
+                Person byId = personService.findById(plan1.getPerson());
+                if (byId != null) {
+                    plan1.setPersonObj(byId);
+                }
+
+
+            }
+            list.set(i, plan1);
+
+        }
+        return ResultGenerator.genSuccessResult(list);
     }
 
     @PostMapping("/detail")
@@ -146,7 +197,7 @@ public class Plan1Controller {
         PageInfo pageInfo = new PageInfo(list);
 
 
-        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList", "company","isPeitong"};
+        String[] fileds = {"ord", "username", "companyName", "dianpingCount", "introObj", "tags", "replyId", "others", "date7", "selfTag", "dianpingList", "tagList", "company", "isPeitong"};
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(Plan1.class, fileds);
         String jsonStu = JSONArray.toJSONString(list, filter);
         List parse = (List) JSONArray.parse(jsonStu);
@@ -176,8 +227,8 @@ public class Plan1Controller {
         Date month = sdf.parse(new SimpleDateFormat("yyyy-MM").format(new Date()) + "-01");
         //获取本周的第一天
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.WEEK_OF_MONTH, 0);
-        cal.set(Calendar.DAY_OF_WEEK, 2);
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
         Date week = sdf.parse(new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime()));
 
         //获取当前
@@ -202,7 +253,7 @@ public class Plan1Controller {
      */
     @CrossOrigin(origins = "*", maxAge = 3600)
     @PostMapping("/export")
-    public Result statistics(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) String ywyIds, @RequestParam(required = false) String custIds,@RequestParam String type, @RequestParam String bumen) throws ParseException {
+    public Result statistics(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) String ywyIds, @RequestParam(required = false) String custIds, @RequestParam String type, @RequestParam String bumen) throws ParseException {
         String url = "";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyy-MM-dd");
         Date sd = null;
@@ -216,9 +267,9 @@ public class Plan1Controller {
         }
 
         try {
-            if(!StrUtils.isNull(ywyIds)) {
+            if (!StrUtils.isNull(ywyIds)) {
                 url = plan1Service.doExport(sd, ed, ywyIds, type, bumen);
-            }else if (!StrUtils.isNull(custIds)){
+            } else if (!StrUtils.isNull(custIds)) {
                 url = plan1Service.doExport2(sd, ed, custIds, type, bumen);
             }
         } catch (ServiceException e) {
@@ -237,9 +288,9 @@ public class Plan1Controller {
         String root = request.getServletContext().getRealPath("/");
         String fileName = request.getParameter("fileName");
 
-        File file = new File( "E:/springboot/" + fileName);
+        File file = new File("E:/springboot/" + fileName);
         FileInputStream fileInputStream = new FileInputStream(file);
-        fileName= fileName.substring(0,fileName.indexOf("VVV"));
+        fileName = fileName.substring(0, fileName.indexOf("VVV"));
         byte[] bytes = IOUtils.toByteArray(fileInputStream);
         response.reset();// 如果有换行，对于文本文件没有什么问题，但是对于其它格
         // 式，比如AutoCAD、Word、Excel等文件下载下来的文件中就会多出一些换行符//0x0d和0x0a，这样可能导致某些格式的文件无法打开，有些也可以正常打开。同//时response.reset()这种方式也能清空缓冲区,
