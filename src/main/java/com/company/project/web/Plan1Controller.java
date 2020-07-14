@@ -102,15 +102,21 @@ public class Plan1Controller {
 
             //查询这个人是否给这条记录点赞
             plan1.setSelfTag(0);
-            if (!StrUtils.isNull(person)) {
-                Condition c = new Condition(Tags.class);
-                Example.Criteria criteria = c.createCriteria();
-                criteria.andEqualTo("person", person);
-                criteria.andEqualTo("plan1", plan1.getOrd());
 
-                List<Tags> byCondition = tagsService.findByCondition(c);
-                if (!CollectionUtils.isEmpty(byCondition)) {
-                    plan1.setSelfTag(1);
+            Condition c = new Condition(Tags.class);
+            Example.Criteria criteria = c.createCriteria();
+            criteria.andEqualTo("plan1", plan1.getOrd());
+            c.setOrderByClause("id desc");
+            List<Tags> byCondition = tagsService.findByCondition(c);
+            if (!CollectionUtils.isEmpty(byCondition)) {
+                plan1.setTagList(byCondition);
+                if (!StrUtils.isNull(person)) {
+                    for (Tags tags : byCondition) {
+                        if (person.equals(tags.getPerson())) {
+                            plan1.setSelfTag(1);
+                        }
+                    }
+
                 }
             }
 
